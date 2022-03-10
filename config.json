@@ -1,0 +1,14 @@
+{
+	"database": {
+		"host": "127.0.0.1",
+		"port": 3307,
+		"user": "root",
+		"dbname": "wizzer_teacher",
+		"pass": ""
+	},
+
+	"sendmail": {
+		"service_mail": "service.orderndrink@gmail.com",
+		"service_pwd": "Game77One"
+	}
+}

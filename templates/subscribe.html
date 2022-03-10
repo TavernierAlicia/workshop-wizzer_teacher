@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> WIZZER TEACHER </title>
+    <link rel = "stylesheet" href="css/main.css">
+
+
+</head>
+
+<body>
+
+    <div class="header">
+        <img src="image/Logo.svg" alt="Profil Etudiant">
+    </div>  
+    
+    <form name="subscribe" method="POST">
+
+        <section class="hero">
+            <div class="container">
+                <div class="Left-col">
+                    <h1> VOUS ÊTES </h1>
+                </div>
+            </div>
+
+            
+            <div>
+                <label for="student">Etudiant</label>
+                <input type="radio" name="account" value="student" id="student" checked>
+
+                <img src="image/Etudiant.svg" alt="Profil Etudiant">
+
+              </div>
+              
+              <div>
+                <label for="prof">Professeur</label>
+                <input type="radio" name="account" value="prof" id="prof">
+
+                <img src="image/Professeur.svg" alt="Profil Professeur">
+
+              </div>
+          
+              <div>
+                  <label for="alum">Alumni</label>
+                  <input type="radio" name="account" value="alum" id="alum">
+
+                  <img src="image/Alumni.svg" alt="Profil Alumni">
+
+              </div>
+
+        </section>
+
+       
+    
+        <section class="hero">
+            <div class="container">
+                <div class="center-col">
+                    <h1> INFORMATIONS PERSONNELLES </h1>
+                </div>
+            </div>
+
+            <div>
+                <label for="surname"> Nom </label>
+                <input title="Ne sont authorisées que les lettres, les espaces et les tirets et le nombre de caractères maximum est de 250" pattern="[A-zÀ-ȕ\s\-]{1,250}" required maxlength="250" id="surname" name="surname" type="text" placeholder="ex: Dupont">
+            </div>
+    
+    
+            <div>
+              <label for="name"> Prénom </label>
+              <input title="Ne sont authorisées que les lettres, les espaces et les tirets et le nombre de caractères maximum est de 250" pattern="[A-zÀ-ȕ\s\-]{1,250}" required maxlength="250" id="name" name="name" type="text" placeholder="ex: Alexandra">
+            </div>
+        
+        
+            <div>
+                <label for="mail"> Adresse mail </label>
+                <input title="Dans ce champ, seules les adresses mail sont authorisées" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required maxlength="250" id="mail"  name="mail" type="email" placeholder="ex: alexandradpt@gmail.com">
+            </div>
+        
+            <div id="repoField"></div>
+        
+            <div id="selectSchool"></div>
+        
+            <div id="studiesOrMatter"></div>
+        </section>
+
+      <section class="hero">
+        <div class="container">
+            <div class="right-col">
+                <h1>MOT DE PASSE</h1>
+                <p id="infos-pwd"></p>
+            </div>
+        </div>
+
+        <div>
+            <label for="pwd">Mot de passe</label>
+            <input title="Les deux mots de passe doivent être identiques" required maxlength="250" id="pwd" name="pwd" type="password" placeholder="Mot de passe">
+          </div>
+      
+          <div>
+            <label for="pwd-confirm">Confirmation du mot de passe</label>
+            <input title="Les deux mots de passe doivent être identiques" required maxlength="250" id="pwd-confirm" name="pwd-confirm" type="password" placeholder="Mot de passe">
+          </div> 
+    </section>
+
+    <script type="text/javascript" src="../js/subscribtion.js"></script>
+         
+    <div class="footer">
+        <h1> © Wizzer Teacher by My Digital School </h1>
+        <button href="http://localhost:9999/"> RETOUR À L'ACCUEIL </button>
+        <button type="submit">S'INSCRIRE</button>
+    </div> 
+        
+    </form>
+
+      {{ if  eq .send 1 }}
+        <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div>
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform">
+          {{ if eq .ok 1 }}
+              <p>Bravo! Vous êtes inscrits sur Wizzer Teacher! Vous pouvez à présent vous connecter</p>
+              <a href="http://localhost:9999/connect">Par ici!</a>
+          {{ else }}
+              <p>Oh non! Quelque chose ne s'est pas passé comme prévu! Vous êtes peut-être déjà inscrit? Si ce n'est pas le cas, vérifiez les informations entrées dans le formulaire.</p>
+              <a href="http://localhost:9999/subscribe">Réessayer</a>
+          {{ end }}
+      </div>
+
+    {{ end }}
+      
+</body>
+</html>
