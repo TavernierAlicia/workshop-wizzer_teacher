@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -30,6 +31,11 @@ func encodePWD(pwd string) (string, error) {
 		resultstr := strconv.Itoa(result)
 		return resultstr, err
 	}
+}
+
+func tokenGenerator() string {
+	token := uuid.New()
+	return token.String()
 }
 
 // print errors

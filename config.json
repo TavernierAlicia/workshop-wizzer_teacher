@@ -8,7 +8,11 @@
 	},
 
 	"sendmail": {
-		"service_mail": "service.orderndrink@gmail.com",
+		"service_mail": "tavernieralicia00@gmail.com",
 		"service_pwd": "Game77One"
+	},
+
+	"links": {
+		"host": "http://127.0.0.1:9999/"
 	}
 }

@@ -1,11 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"net/http"
 	"regexp"
 	"strings"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 var subForm Sub
@@ -27,10 +29,8 @@ func subscribtion(c *gin.Context) {
 	subForm.Pwd = strings.Join(c.Request.PostForm["pwd"], " ")
 	subForm.PwdConfirm = strings.Join(c.Request.PostForm["pwd-confirm"], " ")
 
-	fmt.Println(subForm)
 	// verify data
 
-	// null
 	if (subForm.AccountType == "" && len(subForm.AccountType) > 250) ||
 		(subForm.Name == "" || len(subForm.Name) > 250) ||
 		(subForm.Surname == "" || len(subForm.Surname) > 250) ||
@@ -48,7 +48,6 @@ func subscribtion(c *gin.Context) {
 
 	// radio
 	if stringInSlice(subForm.AccountType, []string{"student", "prof", "alum"}) {
-		fmt.Println("OK")
 		// empty git repo if is not a student
 		if subForm.AccountType != "student" {
 			subForm.Repo = ""
@@ -94,8 +93,6 @@ func subscribtion(c *gin.Context) {
 
 	// pwd
 	if subForm.Pwd == subForm.PwdConfirm {
-		fmt.Println("OK")
-
 		// sha pwd ready for storage
 		subForm.Pwd, err = encodePWD(subForm.Pwd)
 		if err != nil {
@@ -109,7 +106,6 @@ func subscribtion(c *gin.Context) {
 	}
 
 	// record data
-	fmt.Println("ready to store data")
 	err = RecordUser(subForm)
 
 	if err != nil {
@@ -119,4 +115,124 @@ func subscribtion(c *gin.Context) {
 
 	c.HTML(200, "subscribe.html", map[string]interface{}{"send": 1, "ok": 1})
 
+}
+
+func connect(c *gin.Context) {
+
+	c.Request.ParseForm()
+
+	mail := strings.Join(c.Request.PostForm["connect-id"], " ")
+	pwd := strings.Join(c.Request.PostForm["connect-pwd"], " ")
+
+	if mail == "" || pwd == "" {
+		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
+		return
+	}
+
+	pwd, err := encodePWD(pwd)
+
+	if err != nil {
+		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
+		return
+	}
+
+	token, err := getConnected(mail, pwd)
+
+	if err != nil {
+		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
+		return
+	}
+
+	infos, err := getUserInfos(token)
+
+	session := sessions.Default(c)
+	session.Set("token", token)
+	session.Set("type", infos.Type)
+	session.Save()
+
+	// now use session then display the good dashboard
+
+	if infos.Type == "student" || infos.Type == "alum" || infos.Type == "prof" {
+		c.Redirect(http.StatusFound, "/board/exercices")
+	} else {
+		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
+	}
+
+}
+
+func sendResetPWD(c *gin.Context) {
+	c.Request.ParseForm()
+
+	mail := strings.Join(c.Request.PostForm["connect-id"], " ")
+
+	if mail == "" || getMail(mail) == "" {
+		// error
+		c.HTML(200, "forgotten-pwd.html", map[string]interface{}{"send": 1, "ok": 0})
+		return
+	}
+
+	// generate new token to reset mail
+	newtoken := tokenGenerator()
+
+	link := viper.GetString("links.host") + "new-pwd/?token=" + newtoken
+
+	// insert new token in db
+	err = insertToken(newtoken, mail)
+	if err != nil {
+		c.HTML(200, "forgotten-pwd.html", map[string]interface{}{"send": 1, "ok": 0})
+		return
+	}
+
+	// send mail
+	err = SendResetMail(mail, link)
+
+	// if error
+	if err != nil {
+		// delete token from db
+		_ = deleteToken(mail)
+		c.HTML(200, "forgotten-pwd.html", map[string]interface{}{"send": 1, "ok": 0})
+		return
+	}
+
+	// okay
+	c.HTML(200, "forgotten-pwd.html", map[string]interface{}{"send": 1, "ok": 1})
+
+}
+
+func ResetPWD(c *gin.Context) {
+	c.Request.ParseForm()
+
+	token := c.Query("token")
+	pwd := strings.Join(c.Request.PostForm["pwd"], " ")
+	confirm_pwd := strings.Join(c.Request.PostForm["pwd-confirm"], " ")
+
+	// check pwd
+	if (pwd == "" || confirm_pwd == "") || pwd != confirm_pwd {
+		c.HTML(200, "new-pwd.html", map[string]interface{}{"send": 1, "ok": 0, "path": c.Query("token")})
+		return
+	}
+
+	id, _ := checkToken(token)
+
+	if id == 0 {
+		c.HTML(200, "new-pwd.html", map[string]interface{}{"send": 1, "ok": 0, "path": c.Query("token")})
+		return
+	}
+
+	// replace pwd
+	pwd, err = encodePWD(pwd)
+	if err != nil {
+		c.HTML(200, "new-pwd.html", map[string]interface{}{"send": 1, "ok": 0, "path": c.Query("token")})
+		return
+	}
+
+	err = updatePWD(pwd, id)
+	if err != nil {
+		c.HTML(200, "new-pwd.html", map[string]interface{}{"send": 1, "ok": 0, "path": c.Query("token")})
+		return
+	}
+
+	err = deleteToken(token)
+
+	c.HTML(200, "new-pwd.html", map[string]interface{}{"send": 1, "ok": 1, "path": ""})
 }

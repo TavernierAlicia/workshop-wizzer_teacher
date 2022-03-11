@@ -109,7 +109,7 @@ function removeGit() {
 function comparePWD(pwd, confirm) {
   if (pwd != confirm) {
     document.getElementById('infos-pwd').textContent = `Les mots de passe ne sont pas identiques`
-    document.getElementById('pwd').setAttribute("pattern", "[A-zÀ-ȕ\s\-]{1000,1000}")
+    document.getElementById('pwd').setAttribute("pattern", "[A]{1000,1000}")
   } else {
     document.getElementById('infos-pwd').textContent = ``
     document.getElementById('pwd').removeAttribute("pattern")

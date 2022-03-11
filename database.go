@@ -57,6 +57,13 @@ func getMatters() (list []string, err error) {
 	return list, err
 }
 
+func getMail(mail string) (result string) {
+	db := dbConnect()
+
+	_ = db.QueryRow("SELECT mail FROM users WHERE mail = ?", mail).Scan(&result)
+	return result
+}
+
 func RecordUser(subForm Sub) (err error) {
 	db := dbConnect()
 
@@ -95,19 +102,82 @@ func RecordUser(subForm Sub) (err error) {
 	}
 
 	// check mail exists
-	_ = db.QueryRow("SELECT mail FROM users WHERE mail = ?", subForm.Mail).Scan(&mail)
-	fmt.Println(mail)
+	mail = getMail(mail)
 	if mail != "" {
 		err = fmt.Errorf("mail already exists")
 		printErr("This mail already exists", "RecordUser", err)
 		return err
 	}
 
-	_, err = db.Exec("INSERT INTO users (name, surname, mail, repo, campus_id, studies_id, matter_id, pwd) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", subForm.Name, subForm.Surname, subForm.Mail, subForm.Repo, school_id, studies_id, matter_id, subForm.Pwd)
+	_, err = db.Exec("INSERT INTO users (name, surname, mail, repo, type, campus_id, studies_id, matter_id, pwd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", subForm.Name, subForm.Surname, subForm.Mail, subForm.Repo, subForm.AccountType, school_id, studies_id, matter_id, subForm.Pwd)
 
 	if err != nil {
 		printErr("User insertion failed", "RecordUser", err)
 	}
 	return err
 
+}
+
+func updatePWD(pwd string, id int64) (err error) {
+	db := dbConnect()
+	_, err = db.Exec("UPDATE users SET pwd = ? WHERE id = ?", pwd, id)
+
+	return err
+}
+
+func insertToken(token string, mail string) (err error) {
+	db := dbConnect()
+
+	_, err = db.Exec("UPDATE users SET token = ? WHERE mail = ?", token, mail)
+
+	return err
+}
+
+func deleteToken(identifier string) (err error) {
+	db := dbConnect()
+
+	_, err = db.Exec("UPDATE users SET token = '' WHERE mail = ? OR token = ?", identifier, identifier)
+	return err
+}
+
+func checkToken(token string) (id int64, err error) {
+	db := dbConnect()
+	err = db.QueryRow("SELECT id FROM users WHERE token = ?", token).Scan(&id)
+
+	if err != nil {
+		printErr("get user from token", "checkToken", err)
+		return 0, err
+	}
+
+	return id, err
+}
+
+func getConnected(mail string, pwd string) (token string, err error) {
+	db := dbConnect()
+
+	var id int64
+	err = db.QueryRow("SELECT id FROM users WHERE mail = ? AND pwd = ?", mail, pwd).Scan(&id)
+
+	if err != nil || id == 0 {
+		printErr("Cannot get this user", "getConnected", err)
+		return "", err
+	}
+
+	token = tokenGenerator()
+	_, err = db.Exec("UPDATE users SET token = ? WHERE id = ?", token, id)
+
+	if err != nil {
+		printErr("Cannot get this user", "getConnected", err)
+		return "", err
+	}
+	return token, err
+}
+
+func getUserInfos(token string) (infos UserInfos, err error) {
+
+	db := dbConnect()
+
+	err = db.Select(&infos, "SELECT users.id, users.name, surname, mail, type, IFNULL(repo, '') AS repo, schools.name AS school, IFNULL(matters.name, '') AS matter, IFNULL(studies.name, '') AS study, pic FROM users LEFT JOIN schools ON users.campus_id = schools.id LEFT JOIN matters ON users.matter_id = matters.id LEFT JOIN studies ON users.studies_id = studies.id WHERE users.token = ?", token)
+
+	return infos, err
 }

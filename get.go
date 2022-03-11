@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,10 +12,27 @@ func displayPage(c *gin.Context) {
 	if page == "" {
 		page = "index"
 	}
-	if page == "subscribe" {
+
+	switch page {
+	case "subscribe":
 		c.HTML(200, "subscribe.html", map[string]interface{}{"send": 0, "ok": 0})
-	} else {
+	case "connect":
+		c.HTML(200, "connect.html", map[string]interface{}{"send": 0, "ok": 0})
+	case "forgotten-pwd":
+		c.HTML(200, "forgotten-pwd.html", map[string]interface{}{"send": 0, "ok": 0})
+
+	default:
 		c.HTML(200, page+".html", nil)
+	}
+}
+
+func getResetPage(c *gin.Context) {
+	// check token before
+	id, _ := checkToken(c.Query("token"))
+	if id != 0 {
+		c.HTML(200, "new-pwd.html", map[string]interface{}{"send": 0, "ok": 0, "path": c.Query("token")})
+	} else {
+		c.AbortWithError(http.StatusBadRequest, err)
 	}
 }
 
