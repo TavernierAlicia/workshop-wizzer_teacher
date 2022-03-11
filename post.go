@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -92,15 +93,7 @@ func subscribtion(c *gin.Context) {
 	}
 
 	// pwd
-	if subForm.Pwd == subForm.PwdConfirm {
-		// sha pwd ready for storage
-		subForm.Pwd, err = encodePWD(subForm.Pwd)
-		if err != nil {
-			c.HTML(200, "subscribe.html", map[string]interface{}{"send": 1, "ok": 0})
-			return
-		}
-
-	} else {
+	if subForm.Pwd != subForm.PwdConfirm {
 		c.HTML(200, "subscribe.html", map[string]interface{}{"send": 1, "ok": 0})
 		return
 	}
@@ -125,11 +118,14 @@ func connect(c *gin.Context) {
 	pwd := strings.Join(c.Request.PostForm["connect-pwd"], " ")
 
 	if mail == "" || pwd == "" {
+		fmt.Println(err)
+
 		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
 		return
 	}
 
 	pwd, err := encodePWD(pwd)
+	fmt.Println(err)
 
 	if err != nil {
 		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
@@ -137,6 +133,7 @@ func connect(c *gin.Context) {
 	}
 
 	token, err := getConnected(mail, pwd)
+	fmt.Println(err)
 
 	if err != nil {
 		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
@@ -144,6 +141,12 @@ func connect(c *gin.Context) {
 	}
 
 	infos, err := getUserInfos(token)
+	fmt.Println(err)
+
+	if err != nil {
+		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
+		return
+	}
 
 	session := sessions.Default(c)
 	session.Set("token", token)
@@ -155,6 +158,7 @@ func connect(c *gin.Context) {
 	if infos.Type == "student" || infos.Type == "alum" || infos.Type == "prof" {
 		c.Redirect(http.StatusFound, "/board/exercices")
 	} else {
+		fmt.Println("ddd")
 		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
 	}
 
@@ -219,12 +223,7 @@ func ResetPWD(c *gin.Context) {
 		return
 	}
 
-	// replace pwd
-	pwd, err = encodePWD(pwd)
-	if err != nil {
-		c.HTML(200, "new-pwd.html", map[string]interface{}{"send": 1, "ok": 0, "path": c.Query("token")})
-		return
-	}
+	fmt.Println(pwd)
 
 	err = updatePWD(pwd, id)
 	if err != nil {

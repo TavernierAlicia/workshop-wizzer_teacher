@@ -67,6 +67,8 @@ func getMail(mail string) (result string) {
 func RecordUser(subForm Sub) (err error) {
 	db := dbConnect()
 
+	subForm.Pwd, _ = encodePWD(subForm.Pwd)
+
 	// check school
 	var (
 		school_id  int
@@ -120,8 +122,12 @@ func RecordUser(subForm Sub) (err error) {
 
 func updatePWD(pwd string, id int64) (err error) {
 	db := dbConnect()
+	fmt.Println(pwd)
+	pwd, _ = encodePWD(pwd)
+	fmt.Println(pwd)
 	_, err = db.Exec("UPDATE users SET pwd = ? WHERE id = ?", pwd, id)
 
+	fmt.Println(err)
 	return err
 }
 
@@ -167,7 +173,7 @@ func getConnected(mail string, pwd string) (token string, err error) {
 	_, err = db.Exec("UPDATE users SET token = ? WHERE id = ?", token, id)
 
 	if err != nil {
-		printErr("Cannot get this user", "getConnected", err)
+		printErr("Cannot update token", "getConnected", err)
 		return "", err
 	}
 	return token, err
@@ -177,7 +183,7 @@ func getUserInfos(token string) (infos UserInfos, err error) {
 
 	db := dbConnect()
 
-	err = db.Select(&infos, "SELECT users.id, users.name, surname, mail, type, IFNULL(repo, '') AS repo, schools.name AS school, IFNULL(matters.name, '') AS matter, IFNULL(studies.name, '') AS study, pic FROM users LEFT JOIN schools ON users.campus_id = schools.id LEFT JOIN matters ON users.matter_id = matters.id LEFT JOIN studies ON users.studies_id = studies.id WHERE users.token = ?", token)
+	err = db.Get(&infos, "SELECT users.id, users.name, surname, mail, type, IFNULL(repo, '') AS repo, schools.name AS school, IFNULL(matters.name, '') AS matter, IFNULL(studies.name, '') AS study, IFNULL(pic, '') AS pic FROM users LEFT JOIN schools ON users.campus_id = schools.id LEFT JOIN matters ON users.matter_id = matters.id LEFT JOIN studies ON users.studies_id = studies.id WHERE users.token = ?", token)
 
 	return infos, err
 }

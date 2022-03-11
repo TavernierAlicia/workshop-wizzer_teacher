@@ -2,8 +2,8 @@ package main
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
-	"strconv"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -23,13 +23,14 @@ func stringInSlice(a string, list []string) bool {
 func encodePWD(pwd string) (string, error) {
 
 	sum := sha256.Sum256([]byte(pwd))
-	result, err := fmt.Printf("%x", sum)
+	pass := hex.EncodeToString(sum[:])
+	fmt.Println(pass)
+
 	if err != nil {
 		fmt.Println("error while converting pwd")
 		return "", err
 	} else {
-		resultstr := strconv.Itoa(result)
-		return resultstr, err
+		return pass, err
 	}
 }
 
