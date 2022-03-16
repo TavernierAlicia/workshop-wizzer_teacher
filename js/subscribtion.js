@@ -82,10 +82,6 @@ function showSchool() {
   document.getElementById('selectSchool').innerHTML = `
     <label for="campus">Campus</label>
     <select title="Vous devez choisir un campus" name="campus" id="campus" required>
-      
-      <option value="Paris 19">Paris 19</option>
-      <option value="Melun">Melun</option>
-      <option value="Rennes">Rennes</option>
     </select>
   `;
   options = `<option selected disabled value="">--Choisissez une école--</option>`

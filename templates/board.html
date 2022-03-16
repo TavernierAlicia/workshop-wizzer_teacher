@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> Board </title>
+  <link rel = "stylesheet" href="css/main.css">
+</head>
+
+<body>
+
+  <!-- Utilisateur -->
+  <section>
+    <p>{{ .name}}</p>
+    <p>{{ .surname }}</p>
+    {{ if eq .student 1 }}
+      <p>score: {{ .score }}</p>
+    {{ end }}
+    <a href="http://localhost:9999/params">Paramètres</a>
+    <a href="http://localhost:9999/board/disconnect">Déconnexion</a>
+
+  </section>
+
+  <!-- Menus -->
+  <section>
+    {{ if eq .student 1 }}
+      <a href=""> Exercices du jour</a>
+      <a href="">Historique</a>
+      <a href="">Classement</a>
+    {{ else }}
+      <a href="">Exercices</a>
+      <a href="">Etudiants</a>
+      <a href="">Statistiques</a>
+    {{ end }}
+  </section>
+
+  <!-- Contenu -->
+
+  <section>
+    <h1>EXERCICES</h1>
+    <!-- Student -->
+    {{ if eq .student 1 }}
+      <h2>Liste exos du jour</h2>
+      <table>
+        <tbody>
+          <tr>
+            <td>Nom</td>
+            <td>Date</td>
+            <td>Repo</td>
+            <td>Language</td>
+            <td>Bareme</td>
+          </tr>
+          {{ range .exos }}
+            <tr>
+              <td>{{ .Name }}</td>
+              <td>{{ .Due }}</td>
+              <td id="repo">{{ .GitPath }}
+                <!-- red alert if no repo -->
+
+                <!-- yellow alert if file empty -->
+
+                <!-- green if okay -->
+
+              </td>
+              <td>{{ .Language }}</td>
+              <td>/{{ .Bareme }}</td>
+            </tr>
+            <tr><td>{{ .Description }}</td></tr>
+          {{ end }}
+
+          {{ if eq .size 0 }}
+            <tr><td>Pas d'exercices prévus pour aujourd'hui</td></tr>
+          {{ end }}
+        </tbody>
+      </table>
+
+      <!-- Prof -->
+    {{ else if eq .student 0 }}
+      <a href="">Ajouter un exo</a>
+      <h2>Liste exos total avec recherche et modification</h2>
+      <form>
+        <h2>Rehercher: </h2>
+        <label for="date">par date: </label>
+        <input type="date" id="date" name="date" value="" min="{{ .first }}" max="{{ .last }}">
+
+        <label for="exo-name">par nom: </label>
+        <input type="text" id="exo-name" name="exo-name" placeholder="ex: Exercice 1.1">
+
+        <div id="level"></div>
+
+        <button type="submit">Chercher</button>
+      </form>
+
+      <table>
+        <tbody>
+          <tr>
+            <td>Nom</td>
+            <td>Date</td>
+            <td>Repo</td>
+            <td>Language</td>
+            <td>Niveau</td>
+            <td>Bareme</td>
+            <td>Actions</td>
+          </tr>
+          {{ range .exos }}
+            <tr>
+              <td>{{ .Name }}</td>
+              <td>{{ .Due }}</td>
+              <td>{{ .GitPath }}</td>
+              <td>{{ .Language }}</td>
+              <td>{{ .Level }}</td>
+              <td>/{{ .Bareme }}</td>
+              <td><a href="">Modifier</a> <a href=""> Suprimer </a></td>
+            </tr>
+              <tr><td>{{ .Description }}</td></tr>
+          {{ end }}
+
+        {{ if eq .size 0 }}
+        <tr><td>Aucun exercice trouvé</td></tr>
+        {{ end }}
+        </tbody>
+      </table>
+
+    {{ else }}
+      <!-- Alum -->
+      <h2>Liste exos total avec recherche</h2>
+      <a href="">Ajouter un exo</a>
+      <h2>Liste exos total avec recherche et modification</h2>
+      <form>
+        <h2>Rehercher: </h2>
+        <label for="date">par date: </label>
+        <input type="date" id="date" name="date" value="" min="{{ .first }}" max="{{ .last }}">
+
+        <label for="exo-name">par nom: </label>
+        <input type="text" id="exo-name" name="exo-name" placeholder="ex: Exercice 1.1">
+
+        <div id="level"></div>
+
+        <button type="submit">Chercher</button>
+      </form>
+      <table>
+        <tbody>
+          <tr>
+            <td>Nom</td>
+            <td>Date</td>
+            <td>Repo</td>
+            <td>Language</td>
+            <td>Niveau</td>
+            <td>Bareme</td>
+          </tr>
+          {{ range .exos }}
+            <tr>
+                <td>{{ .Name }}</td>
+                <td>{{ .Due }}</td>
+                <td>{{ .GitPath }}</td>
+                <td>{{ .Language }}</td>
+                <td>{{ .Level }}</td>
+                <td>/{{ .Bareme }}</td>
+                <tr><td>{{ .Description }}</td></tr>
+            </tr>
+          {{ end }}
+          {{ if eq .size 0 }}
+          <tr><td>Aucun exercice trouvé</td></tr>
+          {{ end }}
+        </tbody>
+      </table>
+    {{ end }}
+  </section>
+
+  <!-- <script type="text/javascript" src="../js/verifGit.js"></script> -->
+  {{ if ne .student 1}}
+  <script>
+    let levels = null;
+
+    const getLevels = _ => fetch('http://localhost:9999/getLevels').then(res => res.json()).then(res => showInfos(res));
+
+    const showInfos = (infos) => {
+      levels = infos;
+      showLevels();
+    }
+
+    function showLevels() {
+      document.getElementById('level').innerHTML = `
+          <label for="exo-level">par niveau:</label>
+          <select name="exo-level" id="exo-level">
+          </select>
+      `;
+      options = `<option value="" selected>-- Tous --</option>`
+      for (const level of levels) {
+        options = options+`<option value="`+level+`">`+level+`</option>`
+      }
+      document.getElementById('exo-level').innerHTML = options
+    }
+
+    window.onload = function() {
+      getLevels();
+    }
+
+  </script>
+  {{ end }}
+</body>
+
+
+
+</html>

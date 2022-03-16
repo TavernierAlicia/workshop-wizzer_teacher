@@ -35,7 +35,25 @@ type UserInfos struct {
 	Type       string `db:"type"`
 	Repository string `db:"repo"`
 	Campus     string `db:"school"`
+	CampusID   int64  `db:"campus_id"`
 	Studies    string `db:"study"`
+	StudiesID  int64  `db:"studies_id"`
 	Matter     string `db:"matter"`
+	MatterID   int64  `db:"matter_id"`
 	Pic        string `db:"pic"`
+}
+
+type Exos struct {
+	Id          int64  `db:"id"`
+	Name        string `db:"name"`
+	GitPath     string `db:"git_path"`
+	Due         string `db:"due_at"`
+	Description string `db:"description"`
+	Matter      string `db:"matter"`
+	Score       int64  `db:"score"`
+	Language    string `db:"language"`
+	Bareme      string `db:"bareme"`
+	Level       string `db:"level"`
+	Creator     string `db:"creator"`
+	Created     string `db:"created"`
 }

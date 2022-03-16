@@ -151,6 +151,11 @@ func connect(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Set("token", token)
 	session.Set("type", infos.Type)
+	session.Set("campus_id", infos.CampusID)
+	session.Set("matter_id", infos.MatterID)
+	session.Set("studies_id", infos.StudiesID)
+	session.Set("name", infos.Name)
+	session.Set("surname", infos.Surname)
 	session.Save()
 
 	// now use session then display the good dashboard

@@ -57,6 +57,16 @@ func getMatters() (list []string, err error) {
 	return list, err
 }
 
+func getLevels() (list []string, err error) {
+	db := dbConnect()
+
+	err = db.Select(&list, "SELECT name FROM levels")
+	if err != nil {
+		printErr("get data", "getLevels", err)
+	}
+	return list, err
+}
+
 func getMail(mail string) (result string) {
 	db := dbConnect()
 
@@ -183,7 +193,52 @@ func getUserInfos(token string) (infos UserInfos, err error) {
 
 	db := dbConnect()
 
-	err = db.Get(&infos, "SELECT users.id, users.name, surname, mail, type, IFNULL(repo, '') AS repo, schools.name AS school, IFNULL(matters.name, '') AS matter, IFNULL(studies.name, '') AS study, IFNULL(pic, '') AS pic FROM users LEFT JOIN schools ON users.campus_id = schools.id LEFT JOIN matters ON users.matter_id = matters.id LEFT JOIN studies ON users.studies_id = studies.id WHERE users.token = ?", token)
+	err = db.Get(&infos, "SELECT users.id, users.name, surname, mail, type, IFNULL(repo, '') AS repo, schools.name AS school, users.campus_id, IFNULL(matters.name, '') AS matter, users.matter_id, IFNULL(studies.name, '') AS study, users.studies_id, IFNULL(pic, '') AS pic FROM users LEFT JOIN schools ON users.campus_id = schools.id LEFT JOIN matters ON users.matter_id = matters.id LEFT JOIN studies ON users.studies_id = studies.id WHERE users.token = ?", token)
 
 	return infos, err
+}
+
+func getExercices(id int64, aType string, studies_id string, campus_id string, matter_id string) (exos []*Exos, err error) {
+
+	db := dbConnect()
+
+	if aType == "student" {
+		// get level_id first
+		var level_id int64
+		var repo string
+		err = db.QueryRow("SELECT level_id, matter_id FROM studies WHERE id = ?", studies_id).Scan(&level_id, &matter_id)
+		if err != nil {
+			printErr("get level_id & matter_id", "getExercices", err)
+		}
+
+		// get repo
+		err = db.QueryRow("SELECT repo FROM users WHERE id = ?", id).Scan(&repo)
+		if err != nil {
+			printErr("get repo", "getExercices", err)
+		}
+
+		// now get exercices
+		err = db.Select(&exos, "SELECT exercices.level_id, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, exercices.due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
+	} else {
+		err = db.Select(&exos, "SELECT levels.name AS level, exercices.id, exercices.name AS name, exercices.git_path, CASE WHEN CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) THEN \"Aujourd'hui\" ELSE exercices.due_at END AS due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id LEFT JOIN levels ON exercices.level_id = levels.id WHERE users.campus_id = ? AND exercices.matter_id = ? AND YEAR(exercices.due_at) = YEAR(NOW()) ORDER BY exercices.due_at ASC", campus_id, matter_id)
+	}
+
+	if err != nil {
+		printErr("get exercices", "getExercices", err)
+		return nil, err
+	}
+	return exos, err
+
+}
+
+func getScore(id int64) (score int64) {
+	db := dbConnect()
+
+	err = db.QueryRow("SELECT IFNULL(SUM(score), 0) FROM rendus WHERE student_id = ?", id).Scan(&score)
+	if err != nil {
+		printErr("get score", "getScore", err)
+		return 0
+	}
+
+	return score
 }

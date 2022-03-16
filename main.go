@@ -44,7 +44,10 @@ func main() {
 	// distinct views
 
 	// all
-	router.GET("/board/exercices")
+	// actually DELETE but html forms makes me sad
+	router.GET("/board/disconnect", disconnect)
+
+	router.GET("/board/exercices", getExos)
 	router.GET("/board/rank")
 	router.GET("/board/params")
 
@@ -57,15 +60,8 @@ func main() {
 
 	// misc
 	router.GET("/subInfos", showSubInfos)
-
-	// student view
-	// router.GET("/students/:id/overview", studentOverview)
-	// router.GET("/students/:id/ranking", studentRanking)
-
-	// test repo github
-	// router.GET("/:github-account/:exerciseName")
-
-	// misc
+	router.GET("/getLevels", showLevels)
+	// router.POST("/results/exercice_id/student_id/", recordGrade)
 
 	router.Run(":9999")
 }
