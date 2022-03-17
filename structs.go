@@ -1,5 +1,7 @@
 package main
 
+import "github.com/gorilla/sessions"
+
 type Sub struct {
 	// General
 	AccountType string
@@ -25,6 +27,19 @@ type SubFormInfos struct {
 	Schools    []string
 	Formations []string
 	Matters    []string
+	Levels     []string
+	Languages  []string
+}
+
+type SessionInfos struct {
+	Session    sessions.Session
+	Token      string
+	Atype      string
+	Name       string
+	Surname    string
+	Campus_id  string
+	Matter_id  string
+	Studies_id string
 }
 
 type UserInfos struct {

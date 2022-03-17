@@ -60,7 +60,7 @@ func main() {
 
 	// misc
 	router.GET("/subInfos", showSubInfos)
-	router.GET("/getLevels", showLevels)
+	router.GET("/getLvlLang", showLvlLang)
 	// router.POST("/results/exercice_id/student_id/", recordGrade)
 
 	router.Run(":9999")

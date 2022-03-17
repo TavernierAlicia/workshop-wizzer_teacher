@@ -87,6 +87,7 @@
         <input type="text" id="exo-name" name="exo-name" placeholder="ex: Exercice 1.1">
 
         <div id="level"></div>
+        <div id="languages"></div>
 
         <button type="submit">Chercher</button>
       </form>
@@ -126,7 +127,7 @@
       <h2>Liste exos total avec recherche</h2>
       <a href="">Ajouter un exo</a>
       <h2>Liste exos total avec recherche et modification</h2>
-      <form>
+      <form name="search-exos" method="GET">
         <h2>Rehercher: </h2>
         <label for="date">par date: </label>
         <input type="date" id="date" name="date" value="" min="{{ .first }}" max="{{ .last }}">
@@ -171,12 +172,15 @@
   {{ if ne .student 1}}
   <script>
     let levels = null;
+    let languages = null;
 
-    const getLevels = _ => fetch('http://localhost:9999/getLevels').then(res => res.json()).then(res => showInfos(res));
+    const getInfos = _ => fetch('http://localhost:9999/getLvlLang').then(res => res.json()).then(res => showInfos(res));
 
     const showInfos = (infos) => {
-      levels = infos;
+      levels = infos.Levels;
+      languages = infos.Languages;
       showLevels();
+      showLanguages();
     }
 
     function showLevels() {
@@ -192,8 +196,21 @@
       document.getElementById('exo-level').innerHTML = options
     }
 
+    function showLanguages() {
+      document.getElementById('languages').innerHTML = `
+          <label for="exo-language">par language:</label>
+          <select name="exo-language" id="exo-language">
+          </select>
+      `;
+      options = `<option value="" selected>-- Tous --</option>`
+      for (const language of languages) {
+        options = options+`<option value="`+language+`">`+language+`</option>`
+      }
+      document.getElementById('exo-language').innerHTML = options
+    }
+
     window.onload = function() {
-      getLevels();
+      getInfos();
     }
 
   </script>

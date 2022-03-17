@@ -67,6 +67,16 @@ func getLevels() (list []string, err error) {
 	return list, err
 }
 
+func getLanguages() (list []string, err error) {
+	db := dbConnect()
+
+	err = db.Select(&list, "SELECT name FROM languages")
+	if err != nil {
+		printErr("get data", "getLanguages", err)
+	}
+	return list, err
+}
+
 func getMail(mail string) (result string) {
 	db := dbConnect()
 
@@ -220,6 +230,9 @@ func getExercices(id int64, aType string, studies_id string, campus_id string, m
 		// now get exercices
 		err = db.Select(&exos, "SELECT exercices.level_id, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, exercices.due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
 	} else {
+
+		// add conditions to request
+
 		err = db.Select(&exos, "SELECT levels.name AS level, exercices.id, exercices.name AS name, exercices.git_path, CASE WHEN CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) THEN \"Aujourd'hui\" ELSE exercices.due_at END AS due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id LEFT JOIN levels ON exercices.level_id = levels.id WHERE users.campus_id = ? AND exercices.matter_id = ? AND YEAR(exercices.due_at) = YEAR(NOW()) ORDER BY exercices.due_at ASC", campus_id, matter_id)
 	}
 

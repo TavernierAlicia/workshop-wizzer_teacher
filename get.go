@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -74,44 +73,74 @@ func showSubInfos(c *gin.Context) {
 	c.JSON(200, infos)
 }
 
-func showLevels(c *gin.Context) {
+func showLvlLang(c *gin.Context) {
+
+	languages, err := getLanguages()
+	if err != nil {
+		c.JSON(500, nil)
+		return
+	}
+
 	levels, err := getLevels()
 	if err != nil {
 		c.JSON(500, nil)
 		return
 	}
 
-	c.JSON(200, levels)
+	infos := &SubFormInfos{
+		Levels:    levels,
+		Languages: languages,
+	}
+	c.JSON(200, infos)
 }
 
 func getExos(c *gin.Context) {
 
 	// verify type & token
-	session := sessions.Default(c)
-	token := fmt.Sprintf("%v", session.Get("token"))
-	aType := fmt.Sprintf("%v", session.Get("type"))
-	name := fmt.Sprintf("%v", session.Get("name"))
-	surname := fmt.Sprintf("%v", session.Get("surname"))
-	campusId := fmt.Sprintf("%v", session.Get("campus_id"))
-	matterId := fmt.Sprintf("%v", session.Get("matter_id"))
-	studiesId := fmt.Sprintf("%v", session.Get("studies_id"))
+	data := GetSessionData(sessions.Default(c))
 
-	id, err := checkToken(token)
+	id, err := checkToken(data.Token)
 	if err != nil || id == 0 {
-		// error
+		errToken(c)
 		return
 	}
 
-	exos, _ := getExercices(id, aType, studiesId, campusId, matterId)
-
-	size := len(exos)
-
-	if aType == "student" {
-		// get day exos
+	if data.Atype == "student" {
+		exos, _ := getExercices(id, data.Atype, data.Studies_id, data.Campus_id, data.Matter_id)
+		size := len(exos)
 		score := getScore(id)
-		c.HTML(200, "board.html", map[string]interface{}{"name": name, "surname": surname, "score": score, "size": size, "student": 1, "exos": exos})
+		c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "score": score, "size": size, "student": 1, "exos": exos})
 	} else {
 
+		// getting possible search criterions
+
+		exoName := c.Query("exo-name")
+		exoDate := c.Query("date")
+		exoLevel := c.Query("exo-level")
+		exoLanguage := c.Query("exo-language")
+
+		// TODO nice for SQL injections
+		var extraQuery string
+
+		if exoDate != "" {
+			extraQuery += " AND DATE(exercices.due_at) = " + exoDate
+		}
+
+		if exoName != "" {
+			extraQuery += " AND exercices.name LIKE %" + exoName + "%"
+		}
+
+		if exoLevel != "" {
+			extraQuery += " AND levels.name = " + exoLevel
+		}
+
+		if exoLanguage != "" {
+			extraQuery += " AND languages.name = " + exoLanguage
+		}
+
+		// get exos
+		exos, _ := getExercices(id, data.Atype, data.Studies_id, data.Campus_id, data.Matter_id)
+		size := len(exos)
 		first := strconv.Itoa(time.Now().Year()) + "/06" + "/01"
 		last := strconv.Itoa(time.Now().Year()) + "/10" + "/01"
 
@@ -120,10 +149,10 @@ func getExos(c *gin.Context) {
 			last = exos[len(exos)-1].Due
 		}
 
-		if aType == "prof" {
-			c.HTML(200, "board.html", map[string]interface{}{"name": name, "surname": surname, "size": size, "student": 0, "last": last, "first": first, "exos": exos})
-		} else if aType == "alum" {
-			c.HTML(200, "board.html", map[string]interface{}{"name": name, "surname": surname, "size": size, "student": 9, "last": last, "first": first, "exos": exos})
+		if data.Atype == "prof" {
+			c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "size": size, "student": 0, "last": last, "first": first, "exos": exos})
+		} else if data.Atype == "alum" {
+			c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "size": size, "student": 9, "last": last, "first": first, "exos": exos})
 		} else {
 			c.AbortWithError(http.StatusBadRequest, err)
 		}

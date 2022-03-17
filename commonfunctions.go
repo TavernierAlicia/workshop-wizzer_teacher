@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	sessions "github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -47,4 +49,19 @@ func printErr(desc string, nomFunc string, err error) {
 	if err != nil {
 		logger.Error("Cannot "+desc, zap.String("Func", nomFunc), zap.Error(err))
 	}
+}
+
+func errToken(c *gin.Context) {
+	c.HTML(403, "unauthorized.html", nil)
+}
+
+func GetSessionData(session sessions.Session) (data SessionInfos) {
+	data.Token = fmt.Sprintf("%v", session.Get("token"))
+	data.Atype = fmt.Sprintf("%v", session.Get("type"))
+	data.Name = fmt.Sprintf("%v", session.Get("name"))
+	data.Surname = fmt.Sprintf("%v", session.Get("surname"))
+	data.Campus_id = fmt.Sprintf("%v", session.Get("campus_id"))
+	data.Matter_id = fmt.Sprintf("%v", session.Get("matter_id"))
+	data.Studies_id = fmt.Sprintf("%v", session.Get("studies_id"))
+	return data
 }
