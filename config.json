@@ -14,5 +14,9 @@
 
 	"links": {
 		"host": "http://127.0.0.1:9999/"
+	},
+
+	"default": {
+		"default_pic": "https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg"
 	}
 }

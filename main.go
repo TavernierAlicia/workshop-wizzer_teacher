@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -46,10 +48,15 @@ func main() {
 	// all
 	// actually DELETE but html forms makes me sad
 	router.GET("/board/disconnect", disconnect)
-
+	router.GET("/board", func(c *gin.Context) {
+		c.Redirect(http.StatusFound, "/board/exercices")
+	})
 	router.GET("/board/exercices", getExos)
 	router.GET("/board/rank")
-	router.GET("/board/params")
+
+	router.GET("/board/params", getParams)
+	// must be PUT but html is boring
+	router.POST("/board/params", recordParams)
 
 	// students
 	router.GET("/board/histo")

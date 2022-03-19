@@ -156,6 +156,7 @@ func connect(c *gin.Context) {
 	session.Set("studies_id", infos.StudiesID)
 	session.Set("name", infos.Name)
 	session.Set("surname", infos.Surname)
+	session.Set("pic", infos.Pic)
 	session.Save()
 
 	// now use session then display the good dashboard
@@ -227,8 +228,6 @@ func ResetPWD(c *gin.Context) {
 		c.HTML(200, "new-pwd.html", map[string]interface{}{"send": 1, "ok": 0, "path": c.Query("token")})
 		return
 	}
-
-	fmt.Println(pwd)
 
 	err = updatePWD(pwd, id)
 	if err != nil {

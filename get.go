@@ -105,12 +105,14 @@ func getExos(c *gin.Context) {
 		return
 	}
 
+	infos, _ := getUserInfos(data.Token)
+
 	if data.Atype == "student" {
 		params := exoSearch{}
 		exos, _ := getExercices(id, data.Atype, data.Studies_id, data.Campus_id, data.Matter_id, params)
 		size := len(exos)
 		score := getScore(id)
-		c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "score": score, "size": size, "student": 1, "exos": exos})
+		c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "score": score, "size": size, "student": 1, "exos": exos, "infos": infos})
 	} else {
 
 		// getting possible search criterions
@@ -133,12 +135,38 @@ func getExos(c *gin.Context) {
 		}
 
 		if data.Atype == "prof" {
-			c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "size": size, "student": 0, "last": last, "first": first, "exos": exos})
+			c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "size": size, "student": 0, "last": last, "first": first, "exos": exos, "infos": infos})
 		} else if data.Atype == "alum" {
-			c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "size": size, "student": 9, "last": last, "first": first, "exos": exos})
+			c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "size": size, "student": 9, "last": last, "first": first, "exos": exos, "infos": infos})
 		} else {
 			c.AbortWithError(http.StatusBadRequest, err)
+			return
 		}
 	}
+
+}
+
+func getParams(c *gin.Context) {
+	// verify type & token
+	data := GetSessionData(sessions.Default(c))
+
+	id, err := checkToken(data.Token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	infos, err := getUserInfos(data.Token)
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	schools, _ := getSchools()
+	formations, _ := getStudies()
+	matters, _ := getMatters()
+
+	c.HTML(200, "parameters.html", map[string]interface{}{"send": 0, "ok": 0, "campus": schools, "matter": matters, "studies": formations, "infos": infos})
 
 }

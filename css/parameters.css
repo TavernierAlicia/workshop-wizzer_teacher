@@ -1,0 +1,126 @@
+.header{
+  color: #5373C6;
+  position: relative;
+  margin-bottom: 1.7em;
+	font-size: 1.4em;
+	font-weight: 600;
+  margin-bottom: 20px;
+  margin-top: 0px;
+  text-align: center;
+}
+
+#main {
+  margin:auto;
+  }
+  #menu  {
+  float:left;
+  width:350px;
+  }
+.para-img{
+  padding-left: 100px;
+  padding-top: 20px;
+}
+
+.etudiant-name{
+  padding-left: 100px;
+  padding-top: 20px;
+  width: 201px;
+  height: 21px;
+}
+
+.etudiant-firstname{
+  padding-left: 100px;
+  padding-top: 10px;
+  width: 201px;
+  height: 21px;
+}
+
+.etudiant-mail{
+  color: #5f6368;
+  font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif;
+  font-weight: 400;
+  letter-spacing: .2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 100px;
+  padding-top: 20px;
+
+}
+
+.parametre-input{
+	width: max-content;
+	margin-left: auto;
+  margin-right: auto;
+  padding-top: 100px;
+}
+
+.parametre-input label{
+  text-align: left;
+  color: #5373C6;
+  line-height: 0.3em;
+  font-size: 18px;
+  font-weight: 100;
+  padding: 50;
+  
+}
+
+.parametre-input input{
+  padding:3px 12px;
+  border: 0.1px solid #d8d0d0;
+  border: radius 0.5px;
+  width: 296px;
+  font-size: 13px;
+  color:#909090 ;
+  margin-bottom: 10px;
+}
+
+
+.btn-parametre{
+  text-align: center;
+}
+
+
+
+.btn-parametre button {
+  font-size: 16px;
+  font-weight: 100;
+  text-align: center;
+  color: #000000;
+  display: inline-block;
+  padding: 10px 29px;
+  background-color: #FFFFFF;
+  border: 1px double #153F85;
+  border-radius: 1px;
+  margin-top: 80px;
+  -webkit-transition: all 0.5s;
+  -moz-transition: all 0.5s;
+  -o-transition: all 0.5s;
+  transition: all 0.5s;
+  cursor: pointer;
+  vertical-align:middle;
+}
+
+.btn-parametre :hover{
+  background-color: rgb(229, 229, 243);
+}
+
+.contenu {
+  margin-left:245px;
+}
+
+body{ min-height:100vh; margin:0; position:relative; }
+
+body {
+  position: relative;
+}
+
+body::after {
+  content: '';
+  display: block;
+  height: 20px; /* Set same as footer's height */
+}
+
+html, body { 
+  width: 100%;
+  
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> parametres </title>
+    <link rel = "stylesheet" href="../css/parameters.css">
+
+  </head>
+
+
+    <body class="body">
+        <div class="header">
+            <p class="head-title">PARAMÈTRES</p>  
+        </div>  
+        
+        <div class="parametre-form">
+            <form name="parametre" method="POST">
+                <section class="hero">
+                    
+                    <div id="main">
+                        <div id="menu">
+                          <input type="file" id="pic" name="pic" accept="image/png, image/jpeg" value="{{ .infos.Pic }}">
+                            <img class= "para-img" src="{{ .infos.Pic }}" alt="etudiant">
+                            <div class="etudiant-name">{{ .infos.Name }}</div>
+                            <div class="etudiant-firstname">{{ .infos.Surname }}</div>
+                            <div class="etudiant-mail">{{ .infos.Mail }}</div>
+                        </div>
+                    </div> 
+
+
+                    <div id="contenu">
+
+                        <div class="parametre-input">
+                          {{ if eq .infos.Type "student" }}
+                            <div><label for="url">Lien vers votre repository</label></div>
+                            <div><input type="url" name="url" id="url" value="{{ .infos.Repository }}" pattern="https://.*" size="30"required></div>
+                          {{ end }}
+                            <div><label for="campus">Campus</label></div>
+                            <div>
+                              <select title="Vous devez choisir un campus" name="campus" id="campus" required>
+                                {{ range .campus }}
+                                  {{ if eq $.infos.Campus . }}
+                                    <option selected value="{{ $.infos.Campus }}">{{ $.infos.Campus }}</option>
+                                  {{ else }}
+                                    <option value="{{ . }}">{{ . }}</option>
+                                  {{ end }}
+                                {{ end }}
+                              </select>
+                            </div>
+                          
+                            {{ if eq .infos.Type "student" }}
+                              <div><label for="formation">Formation</label></div>
+                              <select title="Vous devez choisir une formation" name="formation" id="formation" required>
+                              {{ range .studies }}
+                                {{ if eq $.infos.Studies .}}
+                                  <option selected value="{{ $.infos.Studies }}">{{ $.infos.Studies }}</option>
+                                {{ else }}
+                                  <option  value="{{ . }}">{{ . }}</option>
+                                {{ end }}
+                              
+                              {{ end }}
+                              </select>
+                            {{ else }}
+                            <div><label for="matter">Mattière</label></div>
+                            <select title="Vous devez choisir une matière" name="matter" id="matter" required>
+                            {{ range .matter }}
+                              {{ if eq $.infos.Matter . }}
+                              <option selected value="{{ $.infos.Matter }}">{{ $.infos.Matter }}</option>
+                              {{ else }}
+                              <option value="{{ . }}">{{ . }}</option>
+                              {{ end }}
+                            {{ end }}
+                            </select>
+                          {{ end }}
+                          </div> 
+
+                        <div class="btn-parametre">
+                            <button type="submit" class="valider">VALIDER</button>
+                        </div>
+
+                      {{ if eq .send 1 }}
+                      <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform">
+                            
+                          {{ if eq .ok 1}}
+                            <p class="att"> MIS A JOUR !</p>
+                            <p class="info">Vos informations ont bien étées mises à jour.</p>
+                            <button type="button" class="btnok" onclick="closeForm()">OK</button>
+                          {{ else }}
+                            <p class="att"> ATTENTION !</p>
+                            <p class="info">Vos informations n'ont pas étées mises à jour, veuillez réessayer.</p>
+                            <button type="button" class="btnok" onclick="closeForm()">OK</button>
+                          {{ end }}
+
+                        {{ end }}
+                      </div>
+                </section>
+            </form>
+        </div>
+
+        <script>
+          function closeForm() {
+            document.getElementById('hover').remove()
+            document.getElementById('sendform').remove()
+          } 
+        </script>
+    </body>
+          
+ 
+        
+</html>

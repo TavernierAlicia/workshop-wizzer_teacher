@@ -12,12 +12,13 @@
 
   <!-- Utilisateur -->
   <section>
+    <img src="{{ .infos.Pic }}">
     <p>{{ .name}}</p>
     <p>{{ .surname }}</p>
     {{ if eq .student 1 }}
       <p>score: {{ .score }}</p>
     {{ end }}
-    <a href="http://localhost:9999/params">Paramètres</a>
+    <a href="http://localhost:9999/board/params">Paramètres</button>
     <a href="http://localhost:9999/board/disconnect">Déconnexion</a>
 
   </section>
@@ -172,6 +173,8 @@
 
   <!-- <script type="text/javascript" src="../js/verifGit.js"></script> -->
   {{ if ne .student 1}}
+
+
   <script>
     let levels = null;
     let languages = null;
@@ -225,6 +228,7 @@
     }
 
   </script>
+
   {{ end }}
 </body>
 

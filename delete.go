@@ -28,6 +28,5 @@ func disconnect(c *gin.Context) {
 	session.Clear()
 	session.Save()
 
-	fmt.Println(fmt.Sprintf("%v", session.Get("token")))
 	c.Redirect(http.StatusFound, "/connect")
 }

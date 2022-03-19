@@ -230,7 +230,7 @@ func getExercices(id int64, aType string, studies_id string, campus_id string, m
 		}
 
 		// now get exercices
-		err = db.Select(&exos, "SELECT exercices.level_id, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, exercices.due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
+		err = db.Select(&exos, "SELECT exercices.level_id AS level, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, exercices.due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
 	} else {
 
 		err = db.Select(&exos, `
@@ -259,4 +259,19 @@ func getScore(id int64) (score int64) {
 	}
 
 	return score
+}
+
+func updateParams(id int64, pic string, repo string, campus string, studies string, matter string) (err error) {
+	db := dbConnect()
+
+	if repo != "" {
+		_, err = db.Exec("UPDATE users SET pic = ?, repo = ?, campus_id = (SELECT id FROM schools WHERE name = ?), studies_id = (SELECT id FROM studies WHERE name = ?) WHERE id = ?", pic, repo, campus, studies, id)
+	} else {
+		_, err = db.Exec("UPDATE users SET pic = ?, campus_id = (SELECT id FROM schools WHERE name = ?), matter_id = (SELECT id FROM matters WHERE name = ?) WHERE id = ?", pic, campus, matter, id)
+	}
+
+	if err != nil {
+		printErr("updare params", "updateParams", err)
+	}
+	return err
 }
