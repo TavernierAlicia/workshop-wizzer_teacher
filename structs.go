@@ -72,3 +72,10 @@ type Exos struct {
 	Creator     string `db:"creator"`
 	Created     string `db:"created"`
 }
+
+type exoSearch struct {
+	Name     string
+	Date     string
+	Level    string
+	Language string
+}

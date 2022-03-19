@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title> Mot de passe oublié </title>
+        <link rel = "stylesheet" href="css/main.css">
+
+    </head>
+
+
+    <body>
+        <div class="header">
+            <a href="http://localhost:9999/">
+            <img src="image/Logo.svg" alt="Profil Etudiant">
+            </a>
+        </div>  
+
+        <form name="MDPoublie" method="POST">
+
+            <section class="hero">
+                <div class="container">
+                    <div class="right-col">
+                        <h1>REINITIALISATION DU MOT DE PASSE</h1>  
+                        <p id="infos-pwd"></p>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="connect-id">Nouveau Mot de Passe</label>
+                </div>
+
+                <div>
+                    <input id="pwd" name="pwd" type="password" placeholder="Mot de passe">
+                </div>
+
+                <div>
+                    <label for="pwd-confirm">Confirmation du Mot de Passe</label>
+                  </div>
+          
+                <div>
+                    <input id="pwd-confirm" name="pwd-confirm" type="password" placeholder="Mot de passe">
+                </div> 
+
+                <button type="submit">VALIDER</button>
+
+
+            </section>
+
+            <script type="text/javascript" src="../js/verifPWD.js"></script>
+
+            <div class="footer">
+                <h1> © Wizzer Teacher by My Digital School </h1>
+            </div> 
+
+        </form>
+
+        {{ if  eq .send 1 }}
+        <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div>
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform">
+          {{ if eq .ok 1 }}
+              <p>Le mot de passe a bien été réinitialisé, nous vous invitons à vous reconnecter à présent.</p>
+              <a href="http://localhost:9999/connect">Par ici!</a>
+          {{ else }}
+              <p>Oh non! Quelque chose ne s'est pas passé comme prévu! Veuillez réessayer ultérieurement en vérifiant les informations entrées dans le formulaire.</p>
+              <a href="http://localhost:9999/new-pwd/?token={{ .path }}">Réessayer</a>
+          {{ end }}
+      </div>
+
+    {{ end }}
+      
+
+    </body>
+
+</html>

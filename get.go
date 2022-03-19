@@ -106,40 +106,23 @@ func getExos(c *gin.Context) {
 	}
 
 	if data.Atype == "student" {
-		exos, _ := getExercices(id, data.Atype, data.Studies_id, data.Campus_id, data.Matter_id)
+		params := exoSearch{}
+		exos, _ := getExercices(id, data.Atype, data.Studies_id, data.Campus_id, data.Matter_id, params)
 		size := len(exos)
 		score := getScore(id)
 		c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "score": score, "size": size, "student": 1, "exos": exos})
 	} else {
 
 		// getting possible search criterions
-
-		exoName := c.Query("exo-name")
-		exoDate := c.Query("date")
-		exoLevel := c.Query("exo-level")
-		exoLanguage := c.Query("exo-language")
-
-		// TODO nice for SQL injections
-		var extraQuery string
-
-		if exoDate != "" {
-			extraQuery += " AND DATE(exercices.due_at) = " + exoDate
-		}
-
-		if exoName != "" {
-			extraQuery += " AND exercices.name LIKE %" + exoName + "%"
-		}
-
-		if exoLevel != "" {
-			extraQuery += " AND levels.name = " + exoLevel
-		}
-
-		if exoLanguage != "" {
-			extraQuery += " AND languages.name = " + exoLanguage
+		params := exoSearch{
+			Name:     c.Query("exo-name"),
+			Level:    c.Query("exo-level"),
+			Date:     c.Query("date"),
+			Language: c.Query("exo-language"),
 		}
 
 		// get exos
-		exos, _ := getExercices(id, data.Atype, data.Studies_id, data.Campus_id, data.Matter_id)
+		exos, _ := getExercices(id, data.Atype, data.Studies_id, data.Campus_id, data.Matter_id, params)
 		size := len(exos)
 		first := strconv.Itoa(time.Now().Year()) + "/06" + "/01"
 		last := strconv.Itoa(time.Now().Year()) + "/10" + "/01"

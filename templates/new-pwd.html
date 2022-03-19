@@ -5,56 +5,43 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title> Mot de passe oublié </title>
-        <link rel = "stylesheet" href="css/main.css">
+        <link rel = "stylesheet" href="../css/CMDP.css">
 
     </head>
 
 
-    <body>
+    <body class="body">
         <div class="header">
-            <a href="http://localhost:9999/">
-            <img src="image/Logo.svg" alt="Profil Etudiant">
+            <a class="header-image" href="http://localhost:9999/">
+				<img class="logo" src="image/Logo.svg" alt="Profil Etudiant">
             </a>
         </div>  
 
-        <form name="MDPoublie" method="POST">
+        <div class="newpassword-form">
+            <form name="newpassword" method="POST">
 
-            <section class="hero">
-                <div class="container">
-                    <div class="right-col">
-                        <h1>REINITIALISATION DU MOT DE PASSE</h1>  
-                        <p id="infos-pwd"></p>
+                <section class="hero">
+                    <div class="container">
+                        <div class="form-text">
+                            <p class="form-title">REINITIALISATION DU MOT DE PASSE</h1>  
+                        </div>
                     </div>
-                </div>
+                    <div id="infos-pwd"></div>
+                    <div class="password-input">
+                        <div><label for="connect-id">Entrez ici votre nouveau mot de passe</label></div>
+                        <div><input id="pwd" name="pwd" type="password" placeholder="Mot de passe"></div>
+                        <div><label for="pwd-confirm">Confirmez votre nouveau mot de passe</label></div>
+                        <div><input id="pwd-confirm" name="pwd-confirm" type="password" placeholder="Mot de passe"></div>
+                    </div> 
 
-                <div>
-                    <label for="connect-id">Nouveau Mot de Passe</label>
-                </div>
-
-                <div>
-                    <input id="pwd" name="pwd" type="password" placeholder="Mot de passe">
-                </div>
-
-                <div>
-                    <label for="pwd-confirm">Confirmation du Mot de Passe</label>
-                  </div>
-          
-                <div>
-                    <input id="pwd-confirm" name="pwd-confirm" type="password" placeholder="Mot de passe">
-                </div> 
-
-                <button type="submit">VALIDER</button>
+                    <div class="submit-btn"><button type="submit">VALIDER</button></div>
 
 
-            </section>
+                </section>
 
-            <script type="text/javascript" src="../js/verifPWD.js"></script>
-
-            <div class="footer">
-                <h1> © Wizzer Teacher by My Digital School </h1>
-            </div> 
-
-        </form>
+            </form>
+        </div>
+        <script type="text/javascript" src="../js/verifPWD.js"></script>
 
         {{ if  eq .send 1 }}
         <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div>
@@ -69,8 +56,10 @@
       </div>
 
     {{ end }}
-      
-
     </body>
+
+    <footer class="footer">
+        <p> © Wizzer Teacher by My Digital School </p>
+    </footer> 
 
 </html>

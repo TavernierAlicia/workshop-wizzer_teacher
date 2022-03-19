@@ -42,3 +42,30 @@
   transition: max-height 0.2s ease-out;
   background-color: #f1f1f1;
 }
+
+
+.arrow {
+  border: solid gray;
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+  padding: 2px;
+  margin-right: 5px;
+}
+
+.up, tr.showdesc .arrow {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+
+.down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+tr.desc { display: none;}
+
+tr.showdesc + tr.desc { display: block; }
+
+tr.exo {
+  cursor: pointer;
+}

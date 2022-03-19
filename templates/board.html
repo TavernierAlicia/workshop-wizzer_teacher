@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title> Board </title>
   <link rel = "stylesheet" href="css/main.css">
+  <link rel = "stylesheet" href="../css/general.css">
 </head>
 
 <body>
@@ -51,8 +52,8 @@
             <td>Bareme</td>
           </tr>
           {{ range .exos }}
-            <tr>
-              <td>{{ .Name }}</td>
+            <tr class="exo" onclick="this.classList.toggle('showdesc');">
+              <td><div class="arrow down"></div>{{ .Name }}</td>
               <td>{{ .Due }}</td>
               <td id="repo">{{ .GitPath }}
                 <!-- red alert if no repo -->
@@ -65,7 +66,7 @@
               <td>{{ .Language }}</td>
               <td>/{{ .Bareme }}</td>
             </tr>
-            <tr><td>{{ .Description }}</td></tr>
+            <tr class="desc"><td>{{ .Description }}</td></tr>
           {{ end }}
 
           {{ if eq .size 0 }}
@@ -104,8 +105,8 @@
             <td>Actions</td>
           </tr>
           {{ range .exos }}
-            <tr>
-              <td>{{ .Name }}</td>
+            <tr class="exo" onclick="this.classList.toggle('showdesc');">
+              <td><div class="arrow down"></div>{{ .Name }}</td>
               <td>{{ .Due }}</td>
               <td>{{ .GitPath }}</td>
               <td>{{ .Language }}</td>
@@ -113,7 +114,7 @@
               <td>/{{ .Bareme }}</td>
               <td><a href="">Modifier</a> <a href=""> Suprimer </a></td>
             </tr>
-              <tr><td>{{ .Description }}</td></tr>
+              <tr class="desc"><td>{{ .Description }}</td></tr>
           {{ end }}
 
         {{ if eq .size 0 }}
@@ -136,6 +137,7 @@
         <input type="text" id="exo-name" name="exo-name" placeholder="ex: Exercice 1.1">
 
         <div id="level"></div>
+        <div id="languages"></div>
 
         <button type="submit">Chercher</button>
       </form>
@@ -150,14 +152,14 @@
             <td>Bareme</td>
           </tr>
           {{ range .exos }}
-            <tr>
-                <td>{{ .Name }}</td>
+            <tr class="exo" onclick="this.classList.toggle('showdesc');"> 
+                <td> <div class="arrow down"></div>{{ .Name }}</td>
                 <td>{{ .Due }}</td>
                 <td>{{ .GitPath }}</td>
                 <td>{{ .Language }}</td>
                 <td>{{ .Level }}</td>
-                <td>/{{ .Bareme }}</td>
-                <tr><td>{{ .Description }}</td></tr>
+                <td>/{{ .Bareme }}</td></tr>
+                <tr class="desc"><td>{{ .Description }}</td></tr>
             </tr>
           {{ end }}
           {{ if eq .size 0 }}
@@ -176,6 +178,8 @@
 
     const getInfos = _ => fetch('http://localhost:9999/getLvlLang').then(res => res.json()).then(res => showInfos(res));
 
+    const params = new URLSearchParams(document.location.search);
+
     const showInfos = (infos) => {
       levels = infos.Levels;
       languages = infos.Languages;
@@ -189,9 +193,10 @@
           <select name="exo-level" id="exo-level">
           </select>
       `;
-      options = `<option value="" selected>-- Tous --</option>`
+      let previousLevel = params.get('exo-level');
+      options = `<option value="" `+(previousLevel?"":"selected")+`>-- Tous --</option>`
       for (const level of levels) {
-        options = options+`<option value="`+level+`">`+level+`</option>`
+        options = options+`<option value="`+level+`" `+(previousLevel==level?"selected":"")+`>`+level+`</option>`
       }
       document.getElementById('exo-level').innerHTML = options
     }
@@ -202,15 +207,21 @@
           <select name="exo-language" id="exo-language">
           </select>
       `;
-      options = `<option value="" selected>-- Tous --</option>`
+      let previousLangage = params.get('exo-language');
+      options = `<option value="" `+(previousLangage?"":"selected")+`>-- Tous --</option>`
       for (const language of languages) {
-        options = options+`<option value="`+language+`">`+language+`</option>`
+        options = options+`<option value="`+language+`" `+(previousLangage==language?"selected":"")+`>`+language+`</option>`
       }
       document.getElementById('exo-language').innerHTML = options
     }
 
     window.onload = function() {
       getInfos();
+      let previousName = params.get('exo-name');
+      let previousDate = params.get('date');
+      if (previousName) document.getElementById('exo-name').value = previousName;
+      if (previousDate) document.getElementById('date').value = previousDate;
+
     }
 
   </script>

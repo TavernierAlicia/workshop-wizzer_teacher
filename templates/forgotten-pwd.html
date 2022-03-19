@@ -5,61 +5,89 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title> Mot de passe oublié </title>
-        <link rel = "stylesheet" href="css/main.css">
+        <link rel = "stylesheet" href="css/MDP.css">
+        <link rel = "stylesheet" href="css/erreur.css">
+        
+
+        
+        
+        
 
     </head>
 
 
-    <body>
+    <body class="body">
         <div class="header">
-            <a href="http://localhost:9999/">
-            <img src="image/Logo.svg" alt="Profil Etudiant">
+            <a class="header-image" href="http://localhost:9999/">
+				<img class="logo" src="image/Logo.svg" alt="Profil Etudiant">
             </a>
         </div>  
 
-        <form name="MDPoublie" method="POST">
+               
+		<div class="password-form">
+			<form name="MDPoublie" method="POST">
 
-            <section class="hero">
-                <div class="container">
-                    <div class="right-col">
-                        <h1>MOT DE PASSE OUBLIE ?</h1>  
+				<section class="hero">
+					<div class="container">
+						<div class="form-text">
+							<p class="form-title">MOT DE PASSE OUBLIE ?</p>  
+							<p class="form-sub-title">PAS DE PANIQUE !</p>
+							<p class="form-message">Entrez votre adresse mail ci-dessous et nous vous
+						enverrons un lien de réinitialisation</p>
+						</div>
+					</div>
+					
+					<div class="password-input">
+						<div><label for="connect-id">Adresse mail</label></div>
+						<div><input title="Dans ce champ, seules les adresses mail sont authorisées" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" name="connect-id" id="connect-id" type="text" placeholder="ex: alexandradpt@gmail.com" required></div>	
+					</div>
+					
+					<div class="submit-btn"><button type="submit">ENVOYER</button></div>	
+				</section>
+
+				
+			</form>
+		</div>
+        
+
+
+
+        {{ if  eq .send 1 }}
+            <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform">
+          
+                    <div class="champ-oublie">
+                        <div class="form-popup" id="popupForm">
+                            <form action="/Inscription.html" class="form-container">
+                               {{ if eq .ok 1 }}
+                                <h1 class="suc"> SUCCES !</h1>
+                                <p class=" comm">E-mail envoyé avec succès, rendez-vous dans votre boîte mail!</p>
+                                <button type="button" class="btncancel" onclick="closeForm()">OK!</button>
+                                        
+                                {{ else }}
+                                    <p class="att"> ATTENTION !</p>
+                                    <p class="com">Nous n'avons pas trouvé cette adresse mail dans notre base de données :(</p>
+                                    <button type="button" class="btncancel" onclick="closeForm()">Je réessaye</button>
+                                {{ end }}
+                            </form>
+                        </div>
+          
                     </div>
                 </div>
+            </div>
 
-                <h1> PAS DE PANIQUE !</h1>
-                <h1> Entrez votre adresse mail ci-dessous et nous vous enverrons un lien de réinitialisation</h1>
+        {{ end }}
 
-
-                {{ if  eq .send 1 }}
-                <div >
-                  {{ if eq .ok 0 }}
-                      <p>Le mail n'a pas été envoyé, il se peut que cette adresse mail n'apparaît pas dans notre base de données ou qu'un problème technique soit survenu, veillez réessayer ultérieurement.</p>
-                {{ else }}
-                    <p>E-mail envoyé avec succès, rendez-vous dans votre boîte mail!</p>
-                
-                    {{ end }}
-                </div>
-                {{ end }}
-
-                <div>
-                <label for="connect-id">Adresse mail</label>
-                </div>
-
-                <div>
-                    <input title="Dans ce champ, seules les adresses mail sont authorisées" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" name="connect-id" id="connect-id" type="text" placeholder="ex: alexandradpt@gmail.com" required>
-                </div>
-
-                <button type="submit">ENVOYER</button>
-
-
-            </section>
-
-            <div class="footer">
-                <h1> © Wizzer Teacher by My Digital School  </h1>
-            </div> 
-
-        </form>
-
+        <script>
+          function closeForm() {
+            document.getElementById('hover').remove()
+            document.getElementById('sendform').remove()
+          } 
+        </script>
     </body>
+
+    <footer class="footer">
+        <p> © Wizzer Teacher by My Digital School </p>
+    </footer> 
 
 </html>

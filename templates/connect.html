@@ -1,69 +1,86 @@
 <!DOCTYPE html>
 <html>
   <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Connexion </title>
-    <link rel = "stylesheet" href="css/main.css">
+    <link rel = "stylesheet" href="css/cnx.css">
+    <link rel = "stylesheet" href="css/erreurconnexion.css">
 
   </head>
 
 
-  <body>
+  <body class="body">
     <div class="header">
-        <a href="http://localhost:9999/">
-        <img src="image/Logo.svg" alt="Profil Etudiant">
+        <a class="header-image" href="http://localhost:9999/">
+    <img class="logo" src="image/Logo.svg" alt="Profil Etudiant">
         </a>
     </div>  
 
-    <form name="connect" method="POST">
+    <div class="connexion-form">
+        <form name="connect" method="POST">
 
-      <section class="hero">
-        <div class="container">
-          <div class="right-col">
-            <h1>CONNEXION</h1>  
-          </div>
-        </div>
+          <section class="hero">
+            <div class="container">
+              <div class="form-text">
+                <p class="form-title">CONNEXION</p>
+              </div>
+            </div>
+
+            <img class= "CNX" src="image/Connexion.svg" alt="Connexion"> 
+            
+            
+            <div class="password-input">
+              <div><label for="connect-id">Adresse mail</label></div>
+              <div><input title="Dans ce champ, seules les adresses mail sont authorisées" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" name="connect-id" id="connect-id" type="text" placeholder="ex: alexandradpt@gmail.com" required></div>
+              <div><label for="connect-pwd">Mot de passe</label></div>
+              <div><input id="connect-pwd" type="password" name="connect-pwd" required placeholder="Mot de passe"></div>
+            </div>
+          
+            <div class="psw"><a href="http://localhost:9999/forgotten-pwd">Mot de passe oublié?</a></div>
+          
+            <div class="retour">
+                <a class= "rta" href="http://localhost:9999/"> RETOUR À L'ACCUEIL</a>
+                <button type="submit" class="conx">SE CONNECTER</button>
+            </div>
+          
+          
+          </section>
+          
+        </form>
+    </div>
+
+    
 
         {{ if  eq .send 1 }}
-        <div >
-          {{ if eq .ok 0 }}
-              <p>Vos identifiants sont incorrects, veuillez réessayer.</p>
-          {{ end }}
+        <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform">
+            
+          <div class="identify">
+            <div class="form-pop" id="formpop">
+              <form action="/Inscription.html" class="form-identifiant">
+                {{ if eq .ok 0 }}
+                    <p class="att"> ATTENTION !</p>
+                    <p class="info">Vos identifiants sont incorrects, veuillez réessayer.</p>
+                    <button type="button" class="btnok" onclick="closeForm()">OK</button>
+                {{ end }}
+              </form>
+            </div>
+          </div>
         </div>
-      {{ end }}
-
-        <img src="image/Connexion.svg" alt="Profil Etudiant">
-
-        <div>
-          <label for="connect-id">Adresse mail</label>
         </div>
-
-        <div>
-          <input title="Dans ce champ, seules les adresses mail sont authorisées" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" name="connect-id" id="connect-id" type="text" placeholder="ex: alexandradpt@gmail.com" required>
-        </div>
-
-        <div>
-          <label for="connect-pwd">Mot de passe</label>
-        </div>
-
-        <div>
-          <input id="connect-pwd" type="password" name="connect-pwd" required placeholder="Mot de passe">
-        </div>
-      
-        <a href="http://localhost:9999/forgotten-pwd">Mot de passe oublié?</a>
-
-      </section>
-
-      <div class="footer">
-        <h1> © Wizzer Teacher by My Digital School  </h1>
-        <a href="http://localhost:9999/"> RETOUR À L'ACCUEIL </a>
-        <button type="submit">SE CONNECTER</button>
-      </div> 
-
-    </form>
-
+        {{ end }}
+        <script>
+          function closeForm() {
+            document.getElementById('hover').remove()
+            document.getElementById('sendform').remove()
+          } 
+        </script>
+          
   </body>
-
+          
+  <footer class="footer">
+    <p> © Wizzer Teacher by My Digital School </p>
+  </footer> 
+          
 </html>
