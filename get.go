@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -256,6 +257,135 @@ func getParams(c *gin.Context) {
 	formations, _ := getStudies()
 	matters, _ := getMatters()
 
-	c.HTML(200, "parameters.html", map[string]interface{}{"send": 0, "ok": 0, "campus": schools, "matter": matters, "studies": formations, "infos": infos})
+	botToken := ""
+	if infos.Type == "prof" {
+		botToken, err = getBotToken(infos.Id)
+
+		if err != nil {
+			botToken = "un problème est survenu, nous vous conseillons de rafraîchir votre botToken"
+		}
+	}
+
+	c.HTML(200, "parameters.html", map[string]interface{}{"botToken": botToken, "send": 0, "ok": 0, "campus": schools, "matter": matters, "studies": formations, "infos": infos})
 
 }
+
+func getRank(c *gin.Context) {
+	data := GetSessionData(sessions.Default(c))
+
+	id, err := checkToken(data.Token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	infos, err := getUserInfos(data.Token)
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	// ok, fetch data
+	students, err := getStudents(infos.StudiesID, infos.CampusID, infos.MatterID)
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	student := 0
+	var score int64
+	if data.Atype == "student" {
+		student = 1
+		score = getScore(id)
+
+	}
+
+	fmt.Println(students)
+
+	// display html
+	c.HTML(200, "rank.html", map[string]interface{}{
+		"infos": infos, "student": student, "score": score, "students": students,
+	})
+
+}
+
+func getStudentHisto(c *gin.Context) {
+	data := GetSessionData(sessions.Default(c))
+
+	id, err := checkToken(data.Token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	infos, err := getUserInfos(data.Token)
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	student_id := c.Query("id")
+	student := 0
+
+	if data.Atype == "student" {
+		student = 1
+		if strconv.FormatInt(infos.Id, 10) != student_id {
+			errToken(c)
+			return
+		}
+	}
+
+	// now get data
+	score := getScore(id)
+	studentScore, err := getStudentScoring(student_id)
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	// return html
+	c.HTML(200, "student.html", map[string]interface{}{
+		"infos": infos, "student": student, "score": score, "studentScoring": studentScore,
+	})
+}
+
+// func getOverview(c *gin.Context) {
+// 	data := GetSessionData(sessions.Default(c))
+
+// 	id, err := checkToken(data.Token)
+// 	if err != nil || id == 0 {
+// 		errToken(c)
+// 		return
+// 	}
+
+// 	infos, err := getUserInfos(data.Token)
+
+// 	if err != nil {
+// 		c.AbortWithError(http.StatusBadRequest, err)
+// 		return
+// 	}
+
+// 	student := 0
+
+// 	if data.Atype == "student" {
+// 		errToken(c)
+// 		return
+// 	}
+
+// 	// now get data
+// 	studentScore, err := getAllStudentScoring()
+
+// 	if err != nil {
+// 		c.AbortWithError(http.StatusBadRequest, err)
+// 		return
+// 	}
+
+// 	// return html
+// 	c.HTML(200, "student.html", map[string]interface{}{
+// 		"infos": infos, "studentScoring": studentScore,
+// 	})
+// }

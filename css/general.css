@@ -19,6 +19,13 @@ input {
 }
 form > * { display: block;}
 
+.hidden {
+  display: none;
+}
+
+tr.students[onclick] { 
+  cursor: pointer;
+}
 
 .collapsible {
   background-color: lightgray;

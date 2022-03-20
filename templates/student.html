@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> Board </title>
+  <link rel = "stylesheet" href="/css/main.css">
+  <link rel = "stylesheet" href="/css/general.css">
+</head>
+
+<body>
+
+  <!-- Utilisateur -->
+  <section>
+    <img src="/imgs/{{ .infos.Pic }}">
+    <p>{{ .infos.Name}}</p>
+    <p>{{ .infos.Surname }}</p>
+    {{ if eq .student 1 }}
+      <p>score: {{ .score }}</p>
+    {{ end }}
+    <a href="http://localhost:9999/board/params">Paramètres</button>
+    <a href="http://localhost:9999/board/disconnect">Déconnexion</a>
+
+  </section>
+
+  <!-- Menus -->
+  <section>
+    {{ if eq .student 1 }}
+      <a href="http://localhost:9999/board"> Exercices du jour</a>
+      <a href="/board/student?id={{ .infos.Id}}">Historique</a>
+      <a href="http://localhost:9999/board/rank">Classement</a>
+    {{ else }}
+      <a href="http://localhost:9999/board">Exercices</a>
+      <a href="http://localhost:9999/board/rank">Etudiants</a>
+      <a href="http://localhost:9999/board/overview">Statistiques</a>
+    {{ end }}
+  </section>
+
+  <section>
+    <h1>{{ .studentScoring.Name }} {{ .studentScoring.Surname }} - {{ .studentScoring.Studies }}</h1>
+    <p>Classement : {{ .studentScoring.Rank }}</p>
+    <p>Score : {{ .studentScoring.Score }}</p>
+    <table>
+      <tbody>
+        <tr>
+          <td>Points par matière</td>
+          <td>Points de {{ .studentScoring.Surname }}</td>
+          <td>Moyenne du Bootcamp</td>
+        </tr>
+        {{ range .studentScoring.ScoreByLang }}
+          <tr>
+            <td>{{ .Lang }}</td>
+            <td>{{ .Score }}</td>
+            <td>{{ .Moy }}</td>
+          </tr>
+        {{ end }}
+
+
+      </tbody>
+    </table>
+
+    <h2>Detail des exercices</h2>
+    <table>
+      <tbody>
+        {{ range .studentScoring.DaysDetails }}
+          <tr>
+            <td>{{ .Date }} - </td>
+            <td>{{ .Score }}pts</td>
+          </tr>
+          <tr>
+            <td>Nom</td>
+            <td>Repo Github</td>
+            <td>Language</td>
+            <td>Score</td>
+          </tr>
+          {{ range .Exos }}
+            <tr>
+              <td>{{ .Name }}</td>
+              <td>{{ .Repo }}</td>
+              <td>{{ .Lang }}</td>
+              <td>{{ .Score }}/{{ .Total }}</td>
+            </tr>
+          {{ end }}
+
+        {{ end }}
+      </tbody>
+    </table>
+
+  </section>

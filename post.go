@@ -294,3 +294,61 @@ func addExo(c *gin.Context) {
 	// success html
 	c.Redirect(http.StatusFound, "/board/exercices/add/true/ok")
 }
+
+func recordGrade(c *gin.Context) {
+
+	token := c.Request.Header.Get("Authorization")
+
+	_, err := checkToken(token)
+	if err != nil {
+		c.JSON(401, nil)
+		return
+	}
+
+	var empty NewGrade
+	var exercice NewGrade
+
+	c.BindJSON(&exercice)
+	if exercice == empty ||
+		exercice.ExerciceID == 0 ||
+		exercice.StudentID == 0 ||
+		exercice.Score == 0 {
+		c.JSON(400, nil)
+		return
+	}
+
+	err = insertRendu(exercice)
+	if err != nil {
+		c.JSON(500, nil)
+		return
+	}
+
+	c.JSON(201, nil)
+
+}
+
+func resetBotToken(c *gin.Context) {
+	data := GetSessionData(sessions.Default(c))
+
+	id, err := checkToken(data.Token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	infos, err := getUserInfos(data.Token)
+
+	if err != nil || data.Atype != "prof" {
+		errToken(c)
+		return
+	}
+
+	_, err = updateBotToken(infos.Id)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/board/params")
+
+}

@@ -59,24 +59,22 @@ func main() {
 	router.POST("/board/exercices/edit", editExo)
 	router.POST("/board/exercices/del", removeExo)
 
-	// Must be puuuuut
-	router.POST("/board/exercices/:id")
-	// Doing it with js...
-	router.DELETE("/board/exercices/:id")
-
 	router.GET("/board/params", getParams)
+	router.GET("/board/params/updateBotToken", resetBotToken)
 	// must be PUT but html is boring
 	router.POST("/board/params", recordParams)
 
-	router.GET("/board/rank")
-	router.GET("/board/histo")
+	router.GET("/board/rank", getRank)
 	router.GET("/board/overview")
-	router.GET("/board/student/:id")
+	router.GET("/board/student", getStudentHisto)
+
+	// router.GET("/board/overview", getOverview)
 
 	// misc
 	router.GET("/subInfos", showSubInfos)
 	router.GET("/getLvlLang", showLvlLang)
-	// router.POST("/results/exercice_id/student_id/", recordGrade)
+
+	router.POST("/results", recordGrade)
 
 	router.Run(":9999")
 }

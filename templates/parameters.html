@@ -25,6 +25,11 @@
                             <div class="etudiant-name">{{ .infos.Name }}</div>
                             <div class="etudiant-firstname">{{ .infos.Surname }}</div>
                             <div class="etudiant-mail">{{ .infos.Mail }}</div>
+                            {{ if eq .infos.Type "prof" }}
+                              <div>
+                                <p>Votre Bot Token : {{ .botToken }} <a href="/board/params/updateBotToken">Refresh</a></p>
+                              </div>
+                            {{ end }}
                         </div>
                     </div> 
 

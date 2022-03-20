@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> Board </title>
+  <link rel = "stylesheet" href="/css/main.css">
+  <link rel = "stylesheet" href="/css/general.css">
+</head>
+
+<body>
+
+  <!-- Utilisateur -->
+  <section>
+    <img src="/imgs/{{ .infos.Pic }}">
+    <p>{{ .infos.Name}}</p>
+    <p>{{ .infos.Surname }}</p>
+    {{ if eq .student 1 }}
+      <p>score: {{ .score }}</p>
+    {{ end }}
+    <a href="http://localhost:9999/board/params">Paramètres</button>
+    <a href="http://localhost:9999/board/disconnect">Déconnexion</a>
+
+  </section>
+
+  <!-- Menus -->
+  <section>
+    {{ if eq .student 1 }}
+      <a href="http://localhost:9999/board"> Exercices du jour</a>
+      <a href="/board/student?id={{ .infos.Id}}">Historique</a>
+      <a href="http://localhost:9999/board/rank">Classement</a>
+    {{ else }}
+      <a href="http://localhost:9999/board">Exercices</a>
+      <a href="http://localhost:9999/board/rank">Etudiants</a>
+      <a href="http://localhost:9999/board/overview">Statistiques</a>
+    {{ end }}
+  </section>
+
+  <section>
+
+    <h2>Classement des élèves</h2>
+    <p>
+      <span>Rechercher :</span>
+      <input type="text" id="selectName" placeholder="Nom de l'élève" value="">
+      <button onclick="search()">Rechercher</button>
+    </p>
+    <p><label>Level : </label><select id="selectLevel" onchange="search()"><option value="" selected>Tous</option></option></select></p>
+    <p><label>Formation : </label><select id="selectStudies" onchange="search()"><option value="" selected>Tous</option></option></select></p>
+
+
+    <table id="students-list">
+      <tbody>
+        <tr>
+          <td>Classement</td>
+          <td>Candidat</td>
+          <td>Formation</td>
+          <td>Score</td>
+        </tr>
+        {{ range .students }}
+        <tr class="students"
+        
+        {{ if ne $.student 1 }}
+        onclick="location.href = '/board/student?id={{ .Id }}'"
+        {{ end }}
+          
+          >
+            <td></td>
+            <td class="student-name">{{ .Name }} {{ .Surname }}</td>
+            <td class="student-studies">{{ .Studies }}</td>
+            <td class="student-level hidden">{{ .Level }}</td>
+            <td>{{ .Score }}</td>
+          </tr>
+        {{ end }}
+      </tbody>
+    </table>
+
+
+  </section>
+
+  <script>
+
+    function setRank() {
+      let trs = document.getElementsByClassName('students');
+      for (let i = 0, j = trs.length; i < j; i++) {
+        trs[i].firstElementChild.textContent = i + 1;
+      }
+    }
+
+    function setSearchLevel() {
+      let levelDiv = document.getElementsByClassName('student-level');
+      let levelSelect = document.getElementById('selectLevel');
+      let level = [];
+      for (let l of levelDiv) {
+        let levelName = l.textContent.toLowerCase().trim();
+        if (level.includes(levelName)) continue;
+        level.push(levelName);
+        let opt = document.createElement('option');
+        opt.value = levelName;
+        opt.textContent = l.textContent;
+        levelSelect.appendChild(opt);
+      }
+    }
+
+    function setSearchStudies() {
+      let studiesDiv = document.getElementsByClassName('student-studies');
+      let studiesSelect = document.getElementById('selectStudies');
+      let studies = [];
+      for (let s of studiesDiv) {
+        let studiesName = s.textContent.toLowerCase().trim();
+        if (studies.includes(studiesName)) continue;
+        studies.push(studiesName);
+        let opt = document.createElement('option');
+        opt.value = studiesName;
+        opt.textContent = s.textContent;
+        studiesSelect.appendChild(opt);
+      }
+    }
+
+    function search() {
+      let trs = document.getElementsByClassName('students');
+      for (let tr of trs) tr.classList.remove('hidden')
+      searchStudent();
+      selectLevel();
+      selectStudies();
+    }
+
+    function searchStudent() {
+      let value = document.getElementById('selectName').value.toLowerCase().trim();
+      if (value) {
+        let studentsName = document.getElementsByClassName('student-name');
+        for (let sn of studentsName) {
+          if (sn.textContent.toLowerCase().trim().indexOf(value) === -1) {
+            sn.parentElement.classList.add('hidden');
+          }
+        }
+      }
+    }
+
+    function selectLevel() {
+      let value = document.getElementById('selectLevel').selectedOptions[0].value;
+      if (value) {
+        let levelDiv = document.getElementsByClassName('student-level');
+        for (let ld of levelDiv) {
+          if (ld.textContent.toLowerCase().trim() !== value) {
+            ld.parentElement.classList.add('hidden')
+          }
+        }
+      }
+    }
+    
+    function selectStudies() {
+      let value = document.getElementById('selectStudies').selectedOptions[0].value;
+      if (value) {
+        let studiesDiv = document.getElementsByClassName('student-studies');
+        for (let sd of studiesDiv) {
+          if (sd.textContent.toLowerCase().trim() !== value) {
+            sd.parentElement.classList.add('hidden')
+          }
+        }
+      }
+    }
+
+    window.onload = _ => {
+      setRank();
+      setSearchLevel();
+      setSearchStudies();
+    };
+  </script>
+
+</body>
+</html>

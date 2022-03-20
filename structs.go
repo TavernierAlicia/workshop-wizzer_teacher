@@ -79,3 +79,51 @@ type exoSearch struct {
 	Level    string
 	Language string
 }
+
+type studentRank struct {
+	Id      int64  `db:"id"`
+	Name    string `db:"name"`
+	Surname string `db:"surname"`
+	Studies string `db:"studies"`
+	Level   string `db:"level"`
+	Score   int64  `db:"score"`
+	Rank    int64  `db:"rank"`
+}
+
+// for student/id and histo
+type Student struct {
+	Id          int64  `db:"id"`
+	Name        string `db:"name"`
+	Surname     string `db:"surname"`
+	Studies     string `db:"studies"`
+	Rank        string `db:"rank"`
+	Score       int64  `db:"score"`
+	ScoreByLang []ScoreLang
+	DaysDetails []Days
+}
+
+type ScoreLang struct {
+	Lang  string `db:"lang"`
+	Score int64  `db:"score_by_lang"`
+	Moy   int64  `db:"moy_score"`
+}
+
+type Days struct {
+	Score int64  `db:"score_by_day"`
+	Date  string `db:"date"`
+	Exos  []Rendus
+}
+
+type Rendus struct {
+	Name  string `db:"exo_name"`
+	Repo  string `db:"repo"`
+	Lang  string `db:"exo_lang"`
+	Score int64  `db:"exo_score"`
+	Total int64  `db:"exo_total"`
+}
+
+type NewGrade struct {
+	ExerciceID int `json:"exercice_id"`
+	StudentID  int `json:"student_id"`
+	Score      int `json:"score"`
+}

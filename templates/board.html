@@ -26,13 +26,13 @@
   <!-- Menus -->
   <section>
     {{ if eq .student 1 }}
-      <a href=""> Exercices du jour</a>
-      <a href="">Historique</a>
-      <a href="">Classement</a>
+      <a href="http://localhost:9999/board"> Exercices du jour</a>
+      <a href="/board/student?id={{ .infos.Id}}">Historique</a>
+      <a href="http://localhost:9999/board/rank">Classement</a>
     {{ else }}
-      <a href="">Exercices</a>
-      <a href="">Etudiants</a>
-      <a href="">Statistiques</a>
+      <a href="http://localhost:9999/board">Exercices</a>
+      <a href="http://localhost:9999/board/rank">Etudiants</a>
+      <a href="http://localhost:9999/board/overview">Statistiques</a>
     {{ end }}
   </section>
 

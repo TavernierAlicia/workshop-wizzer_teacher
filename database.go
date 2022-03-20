@@ -131,24 +131,57 @@ func RecordUser(subForm Sub) (err error) {
 		return err
 	}
 
-	_, err = db.Exec("INSERT INTO users (name, surname, mail, repo, type, campus_id, studies_id, matter_id, pwd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", subForm.Name, subForm.Surname, subForm.Mail, subForm.Repo, subForm.AccountType, school_id, studies_id, matter_id, subForm.Pwd)
+	id, err := db.Exec("INSERT INTO users (name, surname, mail, repo, type, campus_id, studies_id, matter_id, pwd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", subForm.Name, subForm.Surname, subForm.Mail, subForm.Repo, subForm.AccountType, school_id, studies_id, matter_id, subForm.Pwd)
 
 	if err != nil {
 		printErr("User insertion failed", "RecordUser", err)
+		return err
+	}
+
+	if subForm.AccountType == "prof" {
+		botToken := tokenGenerator()
+		id.LastInsertId()
+		// add botToken
+		_, err = db.Exec("INSERT INTO botToken (user_id, token) VALUES (?, ?)", botToken)
+
+		if err != nil {
+			printErr("insert bot token", "RecordUser", err)
+			return err
+		}
 	}
 	return err
-
 }
 
 func updatePWD(pwd string, id int64) (err error) {
 	db := dbConnect()
-	fmt.Println(pwd)
 	pwd, _ = encodePWD(pwd)
-	fmt.Println(pwd)
 	_, err = db.Exec("UPDATE users SET pwd = ? WHERE id = ?", pwd, id)
 
-	fmt.Println(err)
+	printErr("update pwd", "updatePWD", err)
+
 	return err
+}
+
+func updateBotToken(id int64) (botToken string, err error) {
+	db := dbConnect()
+	token := tokenGenerator()
+	_, err = db.Exec("UPDATE botToken SET token = ? WHERE user_id = ?", token, id)
+
+	if err != nil {
+		printErr("update token", "updateBotToken", err)
+	}
+
+	return token, err
+}
+
+func getBotToken(id int64) (botToken string, err error) {
+	db := dbConnect()
+	err = db.QueryRow("SELECT token FROM botToken WHERE user_id = ?", id).Scan(&botToken)
+
+	if err != nil {
+		printErr("get bot token", "getBotToken", err)
+	}
+	return botToken, err
 }
 
 func insertToken(token string, mail string) (err error) {
@@ -230,7 +263,7 @@ func getExercices(id int64, aType string, studies_id string, campus_id string, m
 		}
 
 		// now get exercices
-		err = db.Select(&exos, "SELECT exercices.level_id AS level, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, DATE(exercices.due_at), exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
+		err = db.Select(&exos, "SELECT exercices.level_id AS level, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, DATE(exercices.due_at) AS due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
 	} else {
 
 		err = db.Select(&exos, `
@@ -344,3 +377,237 @@ func getExoDetails(exo_id string, user_id int64) (exo Exos, err error) {
 	}
 	return exo, err
 }
+
+func getStudents(studies_id int64, campus_id int64, matter_id int64) (students []*studentRank, err error) {
+	db := dbConnect()
+
+	err = db.Select(&students, `
+	SELECT users.id, 
+		users.name, 
+		users.surname, 
+		studies.name AS studies, 
+		levels.name AS level,
+		IFNULL(SUM(score), 0) AS score
+	FROM users 
+		JOIN studies ON studies.id = users.studies_id
+		JOIN matters ON matters.id = studies.matter_id
+		JOIN levels ON studies.level_id = levels.id
+		LEFT JOIN rendus ON rendus.student_id = users.id
+	WHERE users.campus_id = ?
+		AND (matters.id = ? OR (SELECT studies.matter_id FROM studies WHERE studies.id = ?) = matters.id)
+		AND users.type = "student"
+	GROUP BY users.id
+	ORDER BY score DESC
+	`,
+		campus_id, matter_id, studies_id)
+
+	if err != nil {
+		printErr("get student rank", "getStudents", err)
+	}
+
+	return students, err
+}
+
+func getStudentScoring(student_id string) (studentScoring Student, err error) {
+
+	db := dbConnect()
+
+	// need some data before filling structs
+	campus_id := 0
+	matter_id := 0
+	studies_id := 0
+	level_id := 0
+
+	err = db.QueryRow("SELECT campus_id, studies_id, users.matter_id, studies.level_id AS level_id FROM users JOIN studies ON studies.id = users.studies_id WHERE users.id = ?", student_id).Scan(&campus_id, &studies_id, &matter_id, &level_id)
+	if err != nil {
+		printErr("cannot get init data", "getStudentScoring", err)
+		return studentScoring, err
+	}
+
+	// get student sample data
+	err = db.Get(&studentScoring, `
+		
+		SELECT a.* FROM (
+			SELECT 
+				users.id AS id,
+				users.name AS name, 
+				@rank:=IFNULL(@rank,0)+1 AS rank,
+				users.surname AS surname,
+				studies.name AS studies,
+				IFNULL(SUM(rendus.score), 0) AS score
+				FROM users 
+				JOIN studies ON studies.id = users.studies_id
+				JOIN matters ON matters.id = studies.matter_id
+				JOIN levels ON studies.level_id = levels.id
+				LEFT JOIN rendus ON rendus.student_id = users.id
+			WHERE users.campus_id = ?
+				AND (matters.id = ? OR (SELECT studies.matter_id FROM studies WHERE studies.id = ?) = matters.id)
+				AND users.type = "student"
+			GROUP BY users.id
+			ORDER BY score DESC
+		) AS a WHERE a.id = ?
+	`, campus_id, matter_id, studies_id, student_id)
+
+	if err != nil {
+		printErr("get user sample data", "getStudentScoring", err)
+		return studentScoring, err
+	}
+
+	// get score by lang
+	err = db.Select(&studentScoring.ScoreByLang, `
+	SELECT 
+		languages.name AS lang,
+		IFNULL(SUM(IF(users.id = ?, rendus.score, 0)), 0) AS score_by_lang,
+		IFNULL(AVG(rendus.score), 0) AS moy_score
+	FROM rendus
+		JOIN exercices ON exercices.id = rendus.exercice_id
+		JOIN languages ON exercices.language_id = languages.id
+		JOIN users ON rendus.student_id = users.id
+		JOIN studies ON studies.id = users.studies_id
+		JOIN matters ON matters.id = studies.matter_id
+		JOIN levels ON studies.level_id = levels.id
+		WHERE users.campus_id = ? AND (matters.id = ? OR (SELECT studies.matter_id FROM studies WHERE studies.id = ?) = matters.id) AND levels.id = ?
+		GROUP BY lang;
+	`, student_id, campus_id, matter_id, studies_id, level_id)
+
+	// get sample days data
+	err = db.Select(&studentScoring.DaysDetails, `
+		SELECT 
+			DATE(created) AS date,
+			IFNULL(SUM(score), 0) AS score_by_day
+		FROM rendus 
+		WHERE student_id = ?
+		GROUP BY date
+	`, student_id)
+
+	if err != nil {
+		printErr("get user sample days data", "getStudentScoring", err)
+		return studentScoring, err
+	}
+
+	// get exos by day
+	for i, day := range studentScoring.DaysDetails {
+		err = db.Select(&studentScoring.DaysDetails[i].Exos, `
+		SELECT 
+			exercices.name AS exo_name,
+			exercices.git_path AS repo,
+			languages.name AS exo_lang,
+			rendus.score AS exo_score,
+			exercices.bareme AS exo_total
+		FROM rendus
+			JOIN exercices ON exercices.id = rendus.exercice_id
+			JOIN languages ON languages.id = exercices.language_id
+		WHERE 
+			rendus.student_id = ?
+			AND DATE(rendus.created) = ?
+	`, student_id, day.Date)
+
+		if err != nil {
+			printErr("get day exos data", "getStudentScoring", err)
+			return studentScoring, err
+		}
+	}
+
+	return studentScoring, err
+}
+
+func insertRendu(exercice NewGrade) (err error) {
+	db := dbConnect()
+	_, err = db.Exec("INSERT INTO rendus (exercice_id, student_id, score) VALUES (?, ?, ?)", exercice.ExerciceID, exercice.StudentID, exercice.Score)
+
+	if err != nil {
+		printErr("insert new rendu", "insertRendu", err)
+	}
+	return err
+}
+
+// func getAllStudentScoring(campus_id string, matter_id string) (studentScoring Student, err error) {
+
+// 	db := dbConnect()
+
+// 	// get student sample data
+// 	err = db.Get(&studentScoring, `
+
+// 		SELECT a.* FROM (
+// 			SELECT
+// 				users.id AS id,
+// 				users.name AS name,
+// 				@rank:=IFNULL(@rank,0)+1 AS rank,
+// 				users.surname AS surname,
+// 				studies.name AS studies,
+// 				IFNULL(SUM(rendus.score), 0) AS score
+// 				FROM users
+// 				JOIN studies ON studies.id = users.studies_id
+// 				JOIN matters ON matters.id = studies.matter_id
+// 				JOIN levels ON studies.level_id = levels.id
+// 				LEFT JOIN rendus ON rendus.student_id = users.id
+// 			WHERE users.campus_id = ?
+// 				AND (matters.id = ? OR (SELECT studies.matter_id FROM studies WHERE studies.id = ?) = matters.id)
+// 				AND users.type = "student"
+// 			GROUP BY users.id
+// 			ORDER BY score DESC
+// 		) AS a WHERE a.id = ?
+// 	`, campus_id, matter_id, studies_id, student_id)
+
+// 	if err != nil {
+// 		printErr("get user sample data", "getStudentScoring", err)
+// 		return studentScoring, err
+// 	}
+
+// 	// get score by lang
+// 	err = db.Select(&studentScoring.ScoreByLang, `
+// 	SELECT
+// 		languages.name AS lang,
+// 		IFNULL(SUM(IF(users.id = ?, rendus.score, 0)), 0) AS score_by_lang,
+// 		IFNULL(AVG(rendus.score), 0) AS moy_score
+// 	FROM rendus
+// 		JOIN exercices ON exercices.id = rendus.exercice_id
+// 		JOIN languages ON exercices.language_id = languages.id
+// 		JOIN users ON rendus.student_id = users.id
+// 		JOIN studies ON studies.id = users.studies_id
+// 		JOIN matters ON matters.id = studies.matter_id
+// 		JOIN levels ON studies.level_id = levels.id
+// 		WHERE users.campus_id = ? AND (matters.id = ? OR (SELECT studies.matter_id FROM studies WHERE studies.id = ?) = matters.id) AND levels.id = ?
+// 		GROUP BY lang;
+// 	`, student_id, campus_id, matter_id, studies_id, level_id)
+
+// 	// get sample days data
+// 	err = db.Select(&studentScoring.DaysDetails, `
+// 		SELECT
+// 			DATE(created) AS date,
+// 			IFNULL(SUM(score), 0) AS score_by_day
+// 		FROM rendus
+// 		WHERE student_id = ?
+// 		GROUP BY date
+// 	`, student_id)
+
+// 	if err != nil {
+// 		printErr("get user sample days data", "getStudentScoring", err)
+// 		return studentScoring, err
+// 	}
+
+// 	// get exos by day
+// 	for i, day := range studentScoring.DaysDetails {
+// 		err = db.Select(&studentScoring.DaysDetails[i].Exos, `
+// 		SELECT
+// 			exercices.name AS exo_name,
+// 			exercices.git_path AS repo,
+// 			languages.name AS exo_lang,
+// 			rendus.score AS exo_score,
+// 			exercices.bareme AS exo_total
+// 		FROM rendus
+// 			JOIN exercices ON exercices.id = rendus.exercice_id
+// 			JOIN languages ON languages.id = exercices.language_id
+// 		WHERE
+// 			rendus.student_id = ?
+// 			AND DATE(rendus.created) = ?
+// 	`, student_id, day.Date)
+
+// 		if err != nil {
+// 			printErr("get day exos data", "getStudentScoring", err)
+// 			return studentScoring, err
+// 		}
+// 	}
+
+// 	return studentScoring, err
+// }
