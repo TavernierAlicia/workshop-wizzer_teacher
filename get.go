@@ -99,6 +99,10 @@ func getExos(c *gin.Context) {
 	// verify type & token
 	data := GetSessionData(sessions.Default(c))
 
+	languagesList, _ := getLanguages()
+	mattersList, _ := getMatters()
+	levelsList, _ := getLevels()
+
 	id, err := checkToken(data.Token)
 	if err != nil || id == 0 {
 		errToken(c)
@@ -112,7 +116,22 @@ func getExos(c *gin.Context) {
 		exos, _ := getExercices(id, data.Atype, data.Studies_id, data.Campus_id, data.Matter_id, params)
 		size := len(exos)
 		score := getScore(id)
-		c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "score": score, "size": size, "student": 1, "exos": exos, "infos": infos})
+
+		c.HTML(200, "board.html", map[string]interface{}{
+			"size":          size,
+			"student":       1,
+			"exos":          exos,
+			"score":         score,
+			"infos":         infos,
+			"mattersList":   mattersList,
+			"levelsList":    levelsList,
+			"languagesList": languagesList,
+			"is_delete":     0,
+			"is_edit":       0,
+			"id_add":        0,
+			"is_success":    0,
+			"is_send":       0,
+		})
 	} else {
 
 		// getting possible search criterions
@@ -135,9 +154,79 @@ func getExos(c *gin.Context) {
 		}
 
 		if data.Atype == "prof" {
-			c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "size": size, "student": 0, "last": last, "first": first, "exos": exos, "infos": infos})
+			is_add := 0
+			is_delete := 0
+			is_edit := 0
+			is_success := 0
+			is_send := 0
+			exo_details := Exos{}
+
+			switch c.Param("action") {
+			case "add":
+				is_add = 1
+
+			case "edit":
+				is_edit = 1
+				if c.Query("exo-id") != "" {
+					exo_details, err = getExoDetails(c.Query("exo-id"), id)
+					if err != nil {
+						is_edit = 0
+					}
+				}
+
+			case "del":
+				is_delete = 1
+				if c.Query("exo-id") != "" {
+					exo_details, err = getExoDetails(c.Query("exo-id"), id)
+					if err != nil {
+						is_delete = 0
+					}
+				}
+
+			default:
+			}
+
+			if c.Param("send") == "true" {
+				is_send = 1
+				if c.Param("result") == "ok" {
+					is_success = 1
+				}
+			}
+
+			c.HTML(200, "board.html", map[string]interface{}{
+				"size":          size,
+				"student":       0,
+				"last":          last,
+				"first":         first,
+				"exos":          exos,
+				"infos":         infos,
+				"mattersList":   mattersList,
+				"levelsList":    levelsList,
+				"languagesList": languagesList,
+				"is_delete":     is_delete,
+				"is_edit":       is_edit,
+				"is_add":        is_add,
+				"is_success":    is_success,
+				"is_send":       is_send,
+				"exo_details":   exo_details,
+			})
 		} else if data.Atype == "alum" {
-			c.HTML(200, "board.html", map[string]interface{}{"name": data.Name, "surname": data.Surname, "size": size, "student": 9, "last": last, "first": first, "exos": exos, "infos": infos})
+			c.HTML(200, "board.html", map[string]interface{}{
+				"size":          size,
+				"student":       9,
+				"last":          last,
+				"first":         first,
+				"exos":          exos,
+				"infos":         infos,
+				"mattersList":   mattersList,
+				"levelsList":    levelsList,
+				"languagesList": languagesList,
+				"is_delete":     0,
+				"is_edit":       0,
+				"id_add":        0,
+				"is_success":    0,
+				"is_send":       0,
+			})
 		} else {
 			c.AbortWithError(http.StatusBadRequest, err)
 			return

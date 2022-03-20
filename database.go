@@ -230,11 +230,11 @@ func getExercices(id int64, aType string, studies_id string, campus_id string, m
 		}
 
 		// now get exercices
-		err = db.Select(&exos, "SELECT exercices.level_id AS level, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, exercices.due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
+		err = db.Select(&exos, "SELECT exercices.level_id AS level, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, DATE(exercices.due_at), exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
 	} else {
 
 		err = db.Select(&exos, `
-		SELECT levels.name AS level, exercices.id, exercices.name AS name, exercices.git_path, CASE WHEN CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) THEN "Aujourd'hui" ELSE exercices.due_at END AS due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id LEFT JOIN levels ON exercices.level_id = levels.id WHERE users.campus_id = ? AND exercices.matter_id = ? AND YEAR(exercices.due_at) = YEAR(NOW()) 
+		SELECT levels.name AS level, exercices.id, exercices.name AS name, exercices.git_path, CASE WHEN CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) THEN "Aujourd'hui" ELSE DATE(exercices.due_at) END AS due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id LEFT JOIN levels ON exercices.level_id = levels.id WHERE users.campus_id = ? AND exercices.matter_id = ? AND YEAR(exercices.due_at) = YEAR(NOW()) 
 		AND IF(? != "", DATE(exercices.due_at) = DATE(?), 1) 
 		AND IF(? != "", exercices.name LIKE ?, 1)
 		AND IF(? != "", levels.name = ?, 1)
@@ -274,4 +274,73 @@ func updateParams(id int64, pic string, repo string, campus string, studies stri
 		printErr("updare params", "updateParams", err)
 	}
 	return err
+}
+
+func postExo(exoName string, gitPath string, date string, desc string, level string, matter string, language string, bareme string, user_id int64) (err error) {
+
+	db := dbConnect()
+
+	_, err = db.Exec("INSERT INTO exercices (name, git_path, due_at, description, level_id, matter_id, language_id, bareme, user_id) VALUES (?, ?, ?, ?, (SELECT id FROM levels WHERE name = ?), (SELECT id FROM matters WHERE name = ?), (SELECT id FROM languages WHERE name = ?), ?, ?)", exoName, gitPath, date, desc, level, matter, language, bareme, user_id)
+
+	if err != nil {
+		printErr("insert exercice", "postExo", err)
+	}
+	return err
+
+}
+
+func putExo(exoName string, gitPath string, date string, desc string, level string, matter string, language string, bareme string, user_id int64, exo_id string) (err error) {
+
+	db := dbConnect()
+
+	_, err = db.Exec("UPDATE exercices SET name = ?, git_path = ?, due_at = ?, description = ?, level_id = (SELECT id FROM levels WHERE name = ?), matter_id = (SELECT id FROM matters WHERE name = ?), language_id = (SELECT id FROM languages WHERE name = ?), bareme = ? WHERE user_id = ? AND id = ?", exoName, gitPath, date, desc, level, matter, language, bareme, user_id, exo_id)
+
+	if err != nil {
+		printErr("update exercice", "putExo", err)
+	}
+	return err
+
+}
+
+func deleteExo(user_id int64, exo_id string) (err error) {
+
+	db := dbConnect()
+
+	_, err = db.Exec("DELETE FROM exercices WHERE id = ? AND user_id = ?", exo_id, user_id)
+
+	if err != nil {
+		printErr("delete exercice", "deleteExo", err)
+	}
+	return err
+
+}
+
+func getExoDetails(exo_id string, user_id int64) (exo Exos, err error) {
+	db := dbConnect()
+
+	err = db.Get(&exo, `
+	SELECT levels.name AS level, 
+		exercices.id, 
+		exercices.name AS name, 
+		exercices.git_path AS git_path, 
+		DATE(exercices.due_at) AS due_at, 
+		exercices.description, 
+		matters.name AS matter, 
+		0 AS score, 
+		languages.name AS language, 
+		exercices.bareme, 
+		CONCAT(users.name, ' ', users.surname) AS creator, 
+		exercices.created 
+	FROM exercices 
+		LEFT JOIN matters ON exercices.matter_id = matters.id 
+		LEFT JOIN languages ON languages.id = exercices.language_id 
+		LEFT JOIN users ON users.id = exercices.user_id 
+		LEFT JOIN levels ON levels.id = exercices.level_id
+	WHERE exercices.user_id = ? AND exercices.id = ?`,
+		user_id, exo_id)
+
+	if err != nil {
+		printErr("get single exercice", "getExoDetails", err)
+	}
+	return exo, err
 }

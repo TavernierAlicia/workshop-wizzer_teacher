@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"strings"
 
 	sessions "github.com/gin-contrib/sessions"
@@ -68,4 +69,61 @@ func recordParams(c *gin.Context) {
 
 	c.HTML(200, "parameters.html", map[string]interface{}{"send": 1, "ok": 1, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 
+}
+
+func editExo(c *gin.Context) {
+	c.Request.ParseForm()
+	data := GetSessionData(sessions.Default(c))
+
+	id, err := checkToken(data.Token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	infos, err := getUserInfos(data.Token)
+
+	if err != nil || data.Atype != "prof" {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	exo_id := c.Query("exo-id")
+
+	description := strings.Join(c.Request.PostForm["desc"], " ")
+	exoName := strings.Join(c.Request.PostForm["exo-name"], " ")
+	bar := strings.Join(c.Request.PostForm["bar"], " ")
+	exoDate := strings.Join(c.Request.PostForm["exo-date"], " ")
+	exoMatter := strings.Join(c.Request.PostForm["exo-matter"], " ")
+	exoLang := strings.Join(c.Request.PostForm["exo-language"], " ")
+	level := strings.Join(c.Request.PostForm["exo-level"], " ")
+	repo := strings.Join(c.Request.PostForm["repo-path"], " ")
+
+	matterslist, _ := getMatters()
+	levelslist, _ := getLevels()
+	languageslist, _ := getLanguages()
+
+	if (description == "" || len(description) > 500) ||
+		(exoName == "" || len(exoName) > 250) ||
+		(bar == "" || len(bar) > 3) ||
+		(exoDate == "" || len(exoDate) != 10) ||
+		(!stringInSlice(exoMatter, matterslist)) ||
+		(!stringInSlice(exoLang, languageslist)) ||
+		(!stringInSlice(level, levelslist)) ||
+		(repo == "" || len(exoDate) > 250) {
+		// html w err
+		c.Redirect(http.StatusFound, "/board/exercices/edit/true/ko")
+		return
+	}
+
+	// now insert in db
+	err = putExo(exoName, repo, exoDate, description, level, exoMatter, exoLang, bar, infos.Id, exo_id)
+
+	if err != nil {
+		// html w err
+		c.Redirect(http.StatusFound, "/board/exercices/edit/true/ko")
+		return
+	}
+	// success html
+	c.Redirect(http.StatusFound, "/board/exercices/edit/true/ok")
 }

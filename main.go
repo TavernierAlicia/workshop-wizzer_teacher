@@ -52,16 +52,24 @@ func main() {
 		c.Redirect(http.StatusFound, "/board/exercices")
 	})
 	router.GET("/board/exercices", getExos)
-	router.GET("/board/rank")
+	router.GET("/board/exercices/:action", getExos)
+	router.GET("/board/exercices/:action/:send/:result", getExos)
+
+	router.POST("/board/exercices/add", addExo)
+	router.POST("/board/exercices/edit", editExo)
+	router.POST("/board/exercices/del", removeExo)
+
+	// Must be puuuuut
+	router.POST("/board/exercices/:id")
+	// Doing it with js...
+	router.DELETE("/board/exercices/:id")
 
 	router.GET("/board/params", getParams)
 	// must be PUT but html is boring
 	router.POST("/board/params", recordParams)
 
-	// students
+	router.GET("/board/rank")
 	router.GET("/board/histo")
-
-	// alumn + profs
 	router.GET("/board/overview")
 	router.GET("/board/student/:id")
 

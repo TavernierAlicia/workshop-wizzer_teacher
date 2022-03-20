@@ -34,7 +34,7 @@
                         <div class="parametre-input">
                           {{ if eq .infos.Type "student" }}
                             <div><label for="url">Lien vers votre repository</label></div>
-                            <div><input type="url" name="url" id="url" value="{{ .infos.Repository }}" pattern="https://.*" size="30"required></div>
+                            <div><input type="text" name="url" id="url" value="{{ .infos.Repository }}" pattern="https://.*" size="30"required></div>
                           {{ end }}
                             <div><label for="campus">Campus</label></div>
                             <div>

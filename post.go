@@ -239,3 +239,58 @@ func ResetPWD(c *gin.Context) {
 
 	c.HTML(200, "new-pwd.html", map[string]interface{}{"send": 1, "ok": 1, "path": ""})
 }
+
+func addExo(c *gin.Context) {
+	c.Request.ParseForm()
+	data := GetSessionData(sessions.Default(c))
+
+	id, err := checkToken(data.Token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	infos, err := getUserInfos(data.Token)
+
+	if err != nil || data.Atype != "prof" {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	description := strings.Join(c.Request.PostForm["desc"], " ")
+	exoName := strings.Join(c.Request.PostForm["exo-name"], " ")
+	bar := strings.Join(c.Request.PostForm["bar"], " ")
+	exoDate := strings.Join(c.Request.PostForm["exo-date"], " ")
+	exoMatter := strings.Join(c.Request.PostForm["exo-matter"], " ")
+	exoLang := strings.Join(c.Request.PostForm["exo-language"], " ")
+	level := strings.Join(c.Request.PostForm["exo-level"], " ")
+	repo := strings.Join(c.Request.PostForm["repo-path"], " ")
+
+	matterslist, _ := getMatters()
+	levelslist, _ := getLevels()
+	languageslist, _ := getLanguages()
+
+	if (description == "" || len(description) > 500) ||
+		(exoName == "" || len(exoName) > 250) ||
+		(bar == "" || len(bar) > 3) ||
+		(exoDate == "" || len(exoDate) != 10) ||
+		(!stringInSlice(exoMatter, matterslist)) ||
+		(!stringInSlice(exoLang, languageslist)) ||
+		(!stringInSlice(level, levelslist)) ||
+		(repo == "" || len(exoDate) > 250) {
+		// html w err
+		c.Redirect(http.StatusFound, "/board/exercices/add/true/ko")
+		return
+	}
+
+	// now insert in db
+	err = postExo(exoName, repo, exoDate, description, level, exoMatter, exoLang, bar, infos.Id)
+
+	if err != nil {
+		// html w err
+		c.Redirect(http.StatusFound, "/board/exercices/add/true/ko")
+		return
+	}
+	// success html
+	c.Redirect(http.StatusFound, "/board/exercices/add/true/ok")
+}
