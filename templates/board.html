@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title> Board </title>
-  <link rel = "stylesheet" href="/css/main.css">
-  <link rel = "stylesheet" href="/css/general.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/general.css">
 </head>
 
 <body>
 
   <!-- Utilisateur -->
   <section>
-    <img src="/imgs/{{ .infos.Pic }}">
+    <img src="../{{ .infos.Pic }}">
     <p>{{ .infos.Name}}</p>
     <p>{{ .infos.Surname }}</p>
     {{ if eq .student 1 }}
@@ -56,6 +56,7 @@
             <tr class="exo" onclick="this.classList.toggle('showdesc');">
               <td><div class="arrow down"></div>{{ .Name }}</td>
               <td>{{ .Due }}</td>
+              <!-- TODO INTEGRATE -->
               <td class="repo" id="repo">{{ .GitPath }}</td>
               <td>{{ .Language }}</td>
               <td>/{{ .Bareme }}</td>
@@ -381,6 +382,7 @@
     }
 
   </script>
+  <!-- TODO INTEGRATE -->
   <script type="text/javascript" src="../js/verifGit.js"></script>
 
 </body>

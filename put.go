@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -11,14 +12,19 @@ import (
 
 func recordParams(c *gin.Context) {
 
-	c.Request.ParseForm()
-	pic := strings.Join(c.Request.PostForm["pic"], " ")
-	repo := strings.Join(c.Request.PostForm["url"], " ")
-	campus := strings.Join(c.Request.PostForm["campus"], " ")
-	studies := strings.Join(c.Request.PostForm["formation"], " ")
-	matter := strings.Join(c.Request.PostForm["matter"], " ")
+	pic := ""
+	ext := ""
+	repo := ""
+	studies := ""
+	matter := ""
+	campus := ""
 
 	data := GetSessionData(sessions.Default(c))
+	infos, _ := getUserInfos(data.Token)
+
+	campuslist, _ := getSchools()
+	studieslist, _ := getStudies()
+	matterslist, _ := getMatters()
 
 	id, err := checkToken(data.Token)
 	if err != nil || id == 0 {
@@ -26,26 +32,79 @@ func recordParams(c *gin.Context) {
 		return
 	}
 
-	campuslist, err := getSchools()
-	studieslist, err := getStudies()
-	matterslist, err := getMatters()
+	bt, _ := getBotToken(id)
 
-	infos, _ := getUserInfos(data.Token)
+	result, _ := c.MultipartForm()
+
+	if len(result.Value["url"]) == 0 {
+		repo = ""
+		if infos.Type == "student" {
+			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			return
+		}
+	} else {
+		repo = result.Value["url"][0]
+	}
+
+	if len(result.Value["formation"]) == 0 {
+		studies = ""
+		if infos.Type == "student" {
+			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			return
+		}
+	} else {
+		studies = result.Value["formation"][0]
+	}
+
+	if len(result.Value["matter"]) == 0 {
+		matter = ""
+		if infos.Type != "student" {
+			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			return
+		}
+	} else {
+		matter = result.Value["matter"][0]
+	}
+
+	if len(result.Value["campus"]) == 0 {
+		c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+		return
+	} else {
+		campus = result.Value["campus"][0]
+	}
+
+	// TODO: rename file, insert correct path in db
+	file, err := c.FormFile("pic")
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		if len(file.Filename) > 0 {
+			ext = after(file.Filename, ".")
+
+			pic = "saved/" + tokenGenerator() + "." + ext
+
+			err = c.SaveUploadedFile(file, pic)
+
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
 
 	// select inputs
 	if !stringInSlice(campus, campuslist) {
-		c.HTML(200, "parameters.html", map[string]interface{}{"send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+		c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 		return
 	}
 
 	if data.Atype == "student" {
 		if !stringInSlice(studies, studieslist) || repo == "" {
-			c.HTML(200, "parameters.html", map[string]interface{}{"send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 			return
 		}
 	} else {
 		if !stringInSlice(matter, matterslist) {
-			c.HTML(200, "parameters.html", map[string]interface{}{"send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 			return
 		}
 	}
@@ -57,7 +116,7 @@ func recordParams(c *gin.Context) {
 	err = updateParams(infos.Id, pic, repo, campus, studies, matter)
 
 	if err != nil {
-		c.HTML(200, "parameters.html", map[string]interface{}{"send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+		c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 		return
 	}
 
@@ -67,7 +126,7 @@ func recordParams(c *gin.Context) {
 	sessions.Default(c).Set("pic", infos.Pic)
 	sessions.Default(c).Save()
 
-	c.HTML(200, "parameters.html", map[string]interface{}{"send": 1, "ok": 1, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+	c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 1, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 
 }
 

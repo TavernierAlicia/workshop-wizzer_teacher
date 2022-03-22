@@ -396,3 +396,10 @@ func getOverview(c *gin.Context) {
 		"levelsList": levelsList, "studiesList": studiesList, "infos": infos, "studentScoring": studentScore,
 	})
 }
+
+// TODO: get data import to csv
+
+// TODO: ask delete account sendmail
+func askDeleteAccount(c *gin.Context) {
+	return
+}

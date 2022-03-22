@@ -61,3 +61,5 @@ func removeExo(c *gin.Context) {
 	// success html
 	c.Redirect(http.StatusFound, "/board/exercices/del/true/ok")
 }
+
+// TODO: delete account on demand

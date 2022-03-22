@@ -19,6 +19,7 @@ func main() {
 
 	//to include images
 	router.Static("/pictures", "./pictures")
+	router.Static("/saved", "./saved")
 
 	store := cookie.NewStore([]byte("secret"))
 	router.Use(sessions.Sessions("mysession", store))
@@ -61,6 +62,15 @@ func main() {
 
 	router.GET("/board/params", getParams)
 	router.GET("/board/params/updateBotToken", resetBotToken)
+
+	// delete account funcs
+	router.GET("/board/params/delete-account", askDeleteAccount)
+	router.GET("/delete-account/wiew")
+	router.GET("/delete-account/delete")
+
+	// export data
+	router.GET("/board/params/export-data")
+
 	// must be PUT but html is boring
 	router.POST("/board/params", recordParams)
 
@@ -69,8 +79,6 @@ func main() {
 	router.GET("/board/overview", getOverview)
 
 	router.GET("/board/student", getStudentHisto)
-
-	// router.GET("/board/overview", getOverview)
 
 	// misc
 	router.GET("/subInfos", showSubInfos)

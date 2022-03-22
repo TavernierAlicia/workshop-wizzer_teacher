@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 
 	sessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -72,4 +74,26 @@ func GetSessionData(session sessions.Session) (data SessionInfos) {
 	data.Matter_id = fmt.Sprintf("%v", session.Get("matter_id"))
 	data.Studies_id = fmt.Sprintf("%v", session.Get("studies_id"))
 	return data
+}
+
+func after(value string, a string) string {
+	pos := strings.LastIndex(value, a)
+	if pos == -1 {
+		return ""
+	}
+	adjustedPos := pos + len(a)
+	if adjustedPos >= len(value) {
+		return ""
+	}
+	return value[adjustedPos:len(value)]
+}
+
+func deleteOldPic(pic string) {
+	if pic != "pictures/no-pic.svg" {
+		err := os.Remove(pic)
+
+		if err != nil {
+			printErr("cannot remove old picure", "deleteOldPic", err)
+		}
+	}
 }

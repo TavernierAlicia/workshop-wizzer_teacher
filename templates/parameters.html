@@ -15,13 +15,13 @@
         </div>  
         
         <div class="parametre-form">
-            <form name="parametre" method="POST">
+            <form name="parametre" method="POST" enctype="multipart/form-data">
                 <section class="hero">
                     
                     <div id="main">
                         <div id="menu">
                           <input type="file" id="pic" name="pic" accept="image/png, image/jpeg" value="{{ .infos.Pic }}">
-                            <img class= "para-img" src="{{ .infos.Pic }}" alt="etudiant">
+                            <img class= "para-img" src="../{{ .infos.Pic }}" alt="etudiant">
                             <div class="etudiant-name">{{ .infos.Name }}</div>
                             <div class="etudiant-firstname">{{ .infos.Surname }}</div>
                             <div class="etudiant-mail">{{ .infos.Mail }}</div>
@@ -30,6 +30,13 @@
                                 <p>Votre Bot Token : {{ .botToken }} <a href="/board/params/updateBotToken">Refresh</a></p>
                               </div>
                             {{ end }}
+
+                            <div>
+                              <p><a href="/board/params/delete">Supprimer le compte</a></p>
+                            </div>
+                            <div>
+                              <p><a href="/board/params/updateBotToken">Exporter les données utilisateur </a> (un tableau au format csv contenant toutes les informations liées à votre compte vous sera envoyé par mail) </p>
+                            </div>
                         </div>
                     </div> 
 

@@ -303,6 +303,15 @@ func getScore(id int64) (score int64) {
 func updateParams(id int64, pic string, repo string, campus string, studies string, matter string) (err error) {
 	db := dbConnect()
 
+	deletePic := ""
+	err = db.QueryRow("SELECT pic FROM users WHERE id = ?", id).Scan(&deletePic)
+
+	if err != nil {
+		printErr("get old pic", "updateParams", err)
+	}
+
+	deleteOldPic(deletePic)
+
 	if repo != "" {
 		_, err = db.Exec("UPDATE users SET pic = ?, repo = ?, campus_id = (SELECT id FROM schools WHERE name = ?), studies_id = (SELECT id FROM studies WHERE name = ?) WHERE id = ?", pic, repo, campus, studies, id)
 	} else {
