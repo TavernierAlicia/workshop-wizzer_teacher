@@ -65,8 +65,8 @@ func main() {
 
 	// delete account funcs
 	router.GET("/board/params/delete-account", askDeleteAccount)
-	router.GET("/delete-account/wiew")
-	router.GET("/delete-account/delete")
+	router.GET("/delete-account/view", DeleteView)
+	router.GET("/delete-account/delete", deleteAccount)
 
 	// export data
 	router.GET("/board/params/export-data")

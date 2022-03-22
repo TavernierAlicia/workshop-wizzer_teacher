@@ -39,7 +39,7 @@ func recordParams(c *gin.Context) {
 	if len(result.Value["url"]) == 0 {
 		repo = ""
 		if infos.Type == "student" {
-			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 			return
 		}
 	} else {
@@ -49,7 +49,7 @@ func recordParams(c *gin.Context) {
 	if len(result.Value["formation"]) == 0 {
 		studies = ""
 		if infos.Type == "student" {
-			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 			return
 		}
 	} else {
@@ -59,7 +59,7 @@ func recordParams(c *gin.Context) {
 	if len(result.Value["matter"]) == 0 {
 		matter = ""
 		if infos.Type != "student" {
-			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 			return
 		}
 	} else {
@@ -67,7 +67,7 @@ func recordParams(c *gin.Context) {
 	}
 
 	if len(result.Value["campus"]) == 0 {
-		c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+		c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 		return
 	} else {
 		campus = result.Value["campus"][0]
@@ -93,18 +93,18 @@ func recordParams(c *gin.Context) {
 
 	// select inputs
 	if !stringInSlice(campus, campuslist) {
-		c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+		c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 		return
 	}
 
 	if data.Atype == "student" {
 		if !stringInSlice(studies, studieslist) || repo == "" {
-			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 			return
 		}
 	} else {
 		if !stringInSlice(matter, matterslist) {
-			c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+			c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 			return
 		}
 	}
@@ -116,17 +116,15 @@ func recordParams(c *gin.Context) {
 	err = updateParams(infos.Id, pic, repo, campus, studies, matter)
 
 	if err != nil {
-		c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+		c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": bt, "send": 1, "ok": 0, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 		return
 	}
-
-	// TODO !!!! insert imgs in server
 
 	infos, _ = getUserInfos(data.Token)
 	sessions.Default(c).Set("pic", infos.Pic)
 	sessions.Default(c).Save()
 
-	c.HTML(200, "parameters.html", map[string]interface{}{"botToken": bt, "send": 1, "ok": 1, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
+	c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": bt, "send": 1, "ok": 1, "campus": campuslist, "matter": matterslist, "studies": studieslist, "infos": infos})
 
 }
 

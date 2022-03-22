@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 func displayPage(c *gin.Context) {
@@ -266,7 +267,7 @@ func getParams(c *gin.Context) {
 		}
 	}
 
-	c.HTML(200, "parameters.html", map[string]interface{}{"botToken": botToken, "send": 0, "ok": 0, "campus": schools, "matter": matters, "studies": formations, "infos": infos})
+	c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "no", "botToken": botToken, "send": 0, "ok": 0, "campus": schools, "matter": matters, "studies": formations, "infos": infos})
 
 }
 
@@ -401,5 +402,66 @@ func getOverview(c *gin.Context) {
 
 // TODO: ask delete account sendmail
 func askDeleteAccount(c *gin.Context) {
-	return
+
+	data := GetSessionData(sessions.Default(c))
+
+	id, err := checkToken(data.Token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	infos, err := getUserInfos(data.Token)
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	deleteLink := viper.GetString("links.host") + "delete-account/view?id=" + strconv.FormatInt(infos.Id, 10) + "&t=" + data.Token
+
+	err = sendDeleteMail(infos.Mail, deleteLink)
+
+	botToken := ""
+
+	if infos.Type == "prof" {
+		botToken, err = getBotToken(infos.Id)
+
+		if err != nil {
+			botToken = "un problème est survenu, nous vous conseillons de rafraîchir votre botToken"
+		}
+	}
+
+	schools, _ := getSchools()
+	formations, _ := getStudies()
+	matters, _ := getMatters()
+
+	if err != nil {
+		c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "failed", "botToken": botToken, "send": 0, "ok": 0, "campus": schools, "matter": matters, "studies": formations, "infos": infos})
+	}
+
+	c.HTML(200, "parameters.html", map[string]interface{}{"getData": "no", "deleteAccount": "success", "botToken": botToken, "send": 0, "ok": 0, "campus": schools, "matter": matters, "studies": formations, "infos": infos})
+}
+
+func DeleteView(c *gin.Context) {
+
+	token := c.Query("t")
+	paramid, err := strconv.ParseInt(c.Query("id"), 10, 64)
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	id, err := checkToken(token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	if paramid != id {
+		errToken(c)
+	}
+
+	c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 0, "ok": 0, "id": id})
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -63,3 +64,34 @@ func removeExo(c *gin.Context) {
 }
 
 // TODO: delete account on demand
+func deleteAccount(c *gin.Context) {
+
+	token := c.Query("t")
+	paramid, err := strconv.ParseInt(c.Query("id"), 10, 64)
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	id, err := checkToken(token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	if paramid != id {
+		errToken(c)
+	}
+
+	// database
+	err = deleteAllUserData(id)
+
+	if err != nil {
+		c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 1, "ok": 0})
+		return
+	}
+
+	c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 1, "ok": 1})
+
+}

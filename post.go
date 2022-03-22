@@ -124,13 +124,7 @@ func connect(c *gin.Context) {
 		return
 	}
 
-	pwd, err := encodePWD(pwd)
-	fmt.Println(err)
-
-	if err != nil {
-		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
-		return
-	}
+	pwd = encodePWD(pwd)
 
 	token, err := getConnected(mail, pwd)
 	fmt.Println(err)

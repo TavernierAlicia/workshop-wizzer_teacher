@@ -88,7 +88,7 @@ func getMail(mail string) (result string) {
 func RecordUser(subForm Sub) (err error) {
 	db := dbConnect()
 
-	subForm.Pwd, _ = encodePWD(subForm.Pwd)
+	subForm.Pwd = encodePWD(subForm.Pwd)
 
 	// check school
 	var (
@@ -160,7 +160,7 @@ func RecordUser(subForm Sub) (err error) {
 
 func updatePWD(pwd string, id int64) (err error) {
 	db := dbConnect()
-	pwd, _ = encodePWD(pwd)
+	pwd = encodePWD(pwd)
 	_, err = db.Exec("UPDATE users SET pwd = ? WHERE id = ?", pwd, id)
 
 	printErr("update pwd", "updatePWD", err)
@@ -629,4 +629,27 @@ func getAllStudentScoring(campus_id int64, matter_id int64, params OverviewSearc
 	}
 
 	return studentScoring, err
+}
+
+func deleteAllUserData(id int64) (err error) {
+	db := dbConnect()
+
+	_, err = db.Exec("DELETE FROM users WHERE id = ?", id)
+	if err != nil {
+		printErr("erase users table", "deleteAllUserData", err)
+		return err
+	}
+	_, err = db.Exec("DELETE FROM exercices WHERE user_id = ?", id)
+	if err != nil {
+		printErr("erase exercices table", "deleteAllUserData", err)
+		return err
+	}
+
+	_, err = db.Exec("DELETE FROM rendus WHERE student_id = ?", id)
+	if err != nil {
+		printErr("erase rendus table", "deleteAllUserData", err)
+		return err
+	}
+
+	return err
 }

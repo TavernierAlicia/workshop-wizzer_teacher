@@ -32,9 +32,23 @@
                             {{ end }}
 
                             <div>
-                              <p><a href="/board/params/delete">Supprimer le compte</a></p>
+                              {{ if ne .deleteAccount "no" }}
+                                {{ if eq .deleteAccount "failed" }}
+                                  <p style="color: red;">Un problème est survenu, veuillez réessayer</p>
+                                {{ else }}
+                                  <p style="color: green;">Un mail de confirmation vous a été envoyé.</p>
+                                {{ end }}
+                              {{ end }}
+                              <p><a href="/board/params/delete-account">Supprimer le compte</a></p>
                             </div>
                             <div>
+                              {{ if ne .getData "no" }}
+                                {{ if eq .getData "failed" }}
+                                <p style="color: red;">Un problème est survenu, veuillez réessayer</p>
+                                {{ else }}
+                                <p style="color: green;">Votre fichier comportant vos données enregistrées par le site vous a été envoyé.</p>
+                                {{ end }}
+                              {{ end }}
                               <p><a href="/board/params/updateBotToken">Exporter les données utilisateur </a> (un tableau au format csv contenant toutes les informations liées à votre compte vous sera envoyé par mail) </p>
                             </div>
                         </div>

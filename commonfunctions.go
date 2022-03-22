@@ -25,18 +25,12 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-func encodePWD(pwd string) (string, error) {
+func encodePWD(pwd string) string {
 
 	sum := sha256.Sum256([]byte(pwd))
 	pass := hex.EncodeToString(sum[:])
-	fmt.Println(pass)
 
-	if err != nil {
-		fmt.Println("error while converting pwd")
-		return "", err
-	} else {
-		return pass, err
-	}
+	return pass
 }
 
 func tokenGenerator() string {

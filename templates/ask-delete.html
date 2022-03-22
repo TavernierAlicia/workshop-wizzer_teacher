@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> parametres </title>
+    <link rel = "stylesheet" href="../css/parameters.css">
+
+  </head>
+
+
+  <body class="body">
+
+
+
+    <section>
+
+      <div>
+        <h1>Supression du compte</h1>
+        <p>Voulez-vous vraiment supprimer votre compte?</p>
+        <p>(Si vous ne les avez pas importées, vos données seront perdues à jamais. Pour les importer, rendez-vous das vos paramètres avant qu'il ne soit trop tard!)</p>
+        <a href="/connect">Annuler</a>
+        <a href="/delete-account/delete?id={{ .id }}&t={{ .t }}">Supprimer</a>
+      </div>
+
+
+
+      {{ if eq .send 1 }}
+      <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div>
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform">
+          
+        {{ if eq .ok 1}}
+          <p class="att"> Compte supprimé !</p>
+          <p class="info">Nous vous souhaitons une bonne continuation </p>
+          <a href="/index">OK</a>
+        {{ else }}
+          <p class="att"> ATTENTION !</p>
+          <p class="info">Une erreur s'est produite, votre compte n'a pas pu être supprimé, veuillez réessayer.</p>
+          <button type="button" class="btnok" onclick="closeForm()">OK</button>
+        {{ end }}
+      </div>
+      {{ end }}
+     
+
+
+    </section>
+
+    <script>
+      function closeForm() {
+        document.getElementById('hover').remove()
+        document.getElementById('sendform').remove()
+      } 
+    </script>
+  </body>
+
+</html>
