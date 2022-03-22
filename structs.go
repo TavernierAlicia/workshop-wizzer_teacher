@@ -127,3 +127,19 @@ type NewGrade struct {
 	StudentID  int `json:"student_id"`
 	Score      int `json:"score"`
 }
+
+type AllResults struct {
+	ScoreByLang []LangScore
+	DaysDetails []Days
+}
+
+type LangScore struct {
+	Lang        string `db:"lang"`
+	Moy         int64  `db:"moy_score"`
+	TotalPoints int64
+}
+
+type OverviewSearch struct {
+	Level   string
+	Studies string
+}

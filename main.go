@@ -65,7 +65,9 @@ func main() {
 	router.POST("/board/params", recordParams)
 
 	router.GET("/board/rank", getRank)
-	router.GET("/board/overview")
+
+	router.GET("/board/overview", getOverview)
+
 	router.GET("/board/student", getStudentHisto)
 
 	// router.GET("/board/overview", getOverview)

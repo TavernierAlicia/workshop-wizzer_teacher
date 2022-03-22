@@ -41,8 +41,7 @@
     <h2>Classement des élèves</h2>
     <p>
       <span>Rechercher :</span>
-      <input type="text" id="selectName" placeholder="Nom de l'élève" value="">
-      <button onclick="search()">Rechercher</button>
+      <input type="text" id="selectName"  oninput="search()" placeholder="Nom de l'élève" value="">
     </p>
     <p><label>Level : </label><select id="selectLevel" onchange="search()"><option value="" selected>Tous</option></option></select></p>
     <p><label>Formation : </label><select id="selectStudies" onchange="search()"><option value="" selected>Tous</option></option></select></p>

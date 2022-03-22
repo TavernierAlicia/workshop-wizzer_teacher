@@ -28,20 +28,41 @@
       <a href="http://localhost:9999/board/overview">Statistiques</a>
   </section>
 
+  <div> 
+    <h2>Rechercher </h2>
+    <p><label>Level : </label>
+        <select id="selectLevel" onchange="search()">
+          <option value="">Tous</option>
+          {{ range .levelsList }}
+            <option value="{{ . }}">{{ . }}</option>
+          {{ end }}
+        </select>
+    </p>
+    <p>
+      <label>Formation : </label>
+      <select id="selectStudies" onchange="search()">
+        <option value="">Tous</option>
+        {{ range .studiesList }}
+          <option value="{{ . }}">{{ . }}</option>
+        {{ end }}
+      </select>
+    </p>
+    
+  </div>
   <section>
     <h1>Vue d'ensemble</h1>
     <table>
       <tbody>
         <tr>
           <td>Points par matière</td>
-          <td>Points de {{ .studentScoring.Surname }}</td>
           <td>Moyenne du Bootcamp</td>
+          <td>Points disponibles</td>
         </tr>
         {{ range .studentScoring.ScoreByLang }}
           <tr>
             <td>{{ .Lang }}</td>
-            <td>{{ .Score }}</td>
             <td>{{ .Moy }}</td>
+            <td>{{ .TotalPoints }}</td>
           </tr>
         {{ end }}
 
@@ -54,14 +75,13 @@
       <tbody>
         {{ range .studentScoring.DaysDetails }}
           <tr>
-            <td>{{ .Date }} - </td>
-            <td>{{ .Score }}pts</td>
+            <td>{{ .Date }} </td>
           </tr>
           <tr>
             <td>Nom</td>
             <td>Repo Github</td>
             <td>Language</td>
-            <td>Score</td>
+            <td>Moyenne</td>
           </tr>
           {{ range .Exos }}
             <tr>
@@ -77,3 +97,36 @@
     </table>
 
   </section>
+  <script>
+    function search() {
+      let level = document.getElementById('selectLevel').selectedOptions[0].value;
+      let studies = document.getElementById('selectStudies').selectedOptions[0].value;
+      let url = "/board/overview?";
+      if (level) url += "exo-level=" + level + "&"
+      if (studies) url += "exo-studies=" + studies
+      location.href = url;
+    }
+
+    window.onload = _ => {
+      let params = new URLSearchParams(location.search);
+      if (params.has("exo-level")) {
+        let level = params.get("exo-level");
+        for (let opts of document.getElementById('selectLevel').children) {
+          if (opts.value == level) {
+            opts.setAttribute('selected', 1);
+            break;
+          }
+        }
+      }
+      if (params.has("exo-studies")) {
+        let studies = params.get("exo-studies");
+        for (let opts of document.getElementById('selectStudies').children) {
+          if (opts.value == studies) {
+            opts.setAttribute('selected', 1);
+            break;
+          }
+        }
+      }
+    }
+  </script>
+</body>

@@ -106,7 +106,7 @@ func getExos(c *gin.Context) {
 
 	id, err := checkToken(data.Token)
 	if err != nil || id == 0 {
-		errToken(c)
+		tokenMismatch(c)
 		return
 	}
 
@@ -353,39 +353,46 @@ func getStudentHisto(c *gin.Context) {
 	})
 }
 
-// func getOverview(c *gin.Context) {
-// 	data := GetSessionData(sessions.Default(c))
+func getOverview(c *gin.Context) {
+	data := GetSessionData(sessions.Default(c))
 
-// 	id, err := checkToken(data.Token)
-// 	if err != nil || id == 0 {
-// 		errToken(c)
-// 		return
-// 	}
+	// getting possible search criterions
+	params := OverviewSearch{
+		Level:   c.Query("exo-level"),
+		Studies: c.Query("exo-studies"),
+	}
 
-// 	infos, err := getUserInfos(data.Token)
+	id, err := checkToken(data.Token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
 
-// 	if err != nil {
-// 		c.AbortWithError(http.StatusBadRequest, err)
-// 		return
-// 	}
+	infos, err := getUserInfos(data.Token)
 
-// 	student := 0
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
-// 	if data.Atype == "student" {
-// 		errToken(c)
-// 		return
-// 	}
+	if data.Atype == "student" {
+		errToken(c)
+		return
+	}
 
-// 	// now get data
-// 	studentScore, err := getAllStudentScoring()
+	// now get data
+	studentScore, err := getAllStudentScoring(infos.CampusID, infos.MatterID, params)
 
-// 	if err != nil {
-// 		c.AbortWithError(http.StatusBadRequest, err)
-// 		return
-// 	}
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
-// 	// return html
-// 	c.HTML(200, "student.html", map[string]interface{}{
-// 		"infos": infos, "studentScoring": studentScore,
-// 	})
-// }
+	studiesList, _ := getStudies()
+	levelsList, _ := getLevels()
+
+	// return html
+	c.HTML(200, "overview.html", map[string]interface{}{
+		"levelsList": levelsList, "studiesList": studiesList, "infos": infos, "studentScoring": studentScore,
+	})
+}

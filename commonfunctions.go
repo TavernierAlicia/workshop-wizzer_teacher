@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net/http"
 
 	sessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -53,6 +54,13 @@ func printErr(desc string, nomFunc string, err error) {
 
 func errToken(c *gin.Context) {
 	c.HTML(403, "unauthorized.html", nil)
+}
+
+func tokenMismatch(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
+	c.Redirect(http.StatusFound, "/connect")
 }
 
 func GetSessionData(session sessions.Session) (data SessionInfos) {
