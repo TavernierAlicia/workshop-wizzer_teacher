@@ -23,6 +23,7 @@ func main() {
 
 	store := cookie.NewStore([]byte("secret"))
 	router.Use(sessions.Sessions("mysession", store))
+	// sessions.Option{MaxAge: }
 
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(200, "error.html", nil)
@@ -66,7 +67,7 @@ func main() {
 	// delete account funcs
 	router.GET("/board/params/delete-account", askDeleteAccount)
 	router.GET("/delete-account/view", DeleteView)
-	router.GET("/delete-account/delete", deleteAccount)
+	router.POST("/delete-account/view", deleteAccount)
 
 	// export data
 	router.GET("/board/params/export-data")

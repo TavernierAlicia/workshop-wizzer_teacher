@@ -60,6 +60,28 @@ func sendDeleteMail(mail string, link string) (err error) {
 
 }
 
+func confirmDelete(mail string, message string) (err error) {
+	from := viper.GetString("sendmail.service_mail")
+	pass := viper.GetString("sendmail.service_pwd")
+
+	subject := "Wizzer Teacher - Supression du compte"
+	//set message
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", from)
+	m.SetHeader("To", mail)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", message)
+
+	d := gomail.NewPlainDialer("smtp.gmail.com", 587, from, pass)
+
+	if err := d.DialAndSend(m); err != nil {
+		panic(err)
+	}
+
+	return err
+}
+
 func sendDataMail(mail string, file string) {
 
 }

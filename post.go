@@ -118,8 +118,6 @@ func connect(c *gin.Context) {
 	pwd := strings.Join(c.Request.PostForm["connect-pwd"], " ")
 
 	if mail == "" || pwd == "" {
-		fmt.Println(err)
-
 		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
 		return
 	}
@@ -127,7 +125,6 @@ func connect(c *gin.Context) {
 	pwd = encodePWD(pwd)
 
 	token, err := getConnected(mail, pwd)
-	fmt.Println(err)
 
 	if err != nil {
 		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
@@ -135,7 +132,6 @@ func connect(c *gin.Context) {
 	}
 
 	infos, err := getUserInfos(token)
-	fmt.Println(err)
 
 	if err != nil {
 		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
@@ -143,6 +139,10 @@ func connect(c *gin.Context) {
 	}
 
 	session := sessions.Default(c)
+	session.Options(sessions.Options{
+		MaxAge: 86400 * 30,
+	})
+
 	session.Set("token", token)
 	session.Set("type", infos.Type)
 	session.Set("campus_id", infos.CampusID)

@@ -461,6 +461,7 @@ func DeleteView(c *gin.Context) {
 
 	if paramid != id {
 		errToken(c)
+		return
 	}
 
 	c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 0, "ok": 0, "id": id})

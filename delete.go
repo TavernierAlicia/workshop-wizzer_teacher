@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -33,7 +34,6 @@ func disconnect(c *gin.Context) {
 }
 
 func removeExo(c *gin.Context) {
-	fmt.Println("DELETE")
 	data := GetSessionData(sessions.Default(c))
 
 	id, err := checkToken(data.Token)
@@ -66,13 +66,16 @@ func removeExo(c *gin.Context) {
 // TODO: delete account on demand
 func deleteAccount(c *gin.Context) {
 
-	token := c.Query("t")
-	paramid, err := strconv.ParseInt(c.Query("id"), 10, 64)
+	c.Request.ParseForm()
+	u_id, err := strconv.ParseInt(strings.Join(c.Request.PostForm["id"], " "), 10, 64)
 
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		errToken(c)
 		return
 	}
+
+	token := strings.Join(c.Request.PostForm["token"], " ")
+	pwd := encodePWD(strings.Join(c.Request.PostForm["pwd"], " "))
 
 	id, err := checkToken(token)
 	if err != nil || id == 0 {
@@ -80,18 +83,46 @@ func deleteAccount(c *gin.Context) {
 		return
 	}
 
-	if paramid != id {
+	if pwd == "" {
+		c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 1, "ok": 0, "id": id})
+		return
+	}
+
+	if u_id != id {
 		errToken(c)
+		return
+	}
+
+	infos, err := getUserInfos(token)
+
+	if err != nil {
+		errToken(c)
+		return
+	}
+
+	// verify password too
+
+	_, err = getConnected(infos.Mail, pwd)
+
+	if err != nil {
+		c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 1, "ok": 0, "id": id})
+		return
 	}
 
 	// database
 	err = deleteAllUserData(id)
 
 	if err != nil {
-		c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 1, "ok": 0})
+		c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 1, "ok": 0, "id": id})
 		return
 	}
 
-	c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 1, "ok": 1})
+	message := ` 
+	<p> Conformément à votre demande, votre compte ainsi que toutes les données accociées à celui-ci ont été supprimés. </p> 
+	<p> Wizzer Teacher vous souhaite une bonne continuation! </p>
+	`
+	_ = confirmDelete(infos.Mail, message)
+
+	c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 1, "ok": 1, "id": id})
 
 }
