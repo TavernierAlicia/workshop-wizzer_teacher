@@ -47,6 +47,16 @@ func getStudies() (list []string, err error) {
 	return list, err
 }
 
+func getStudiesByMatter(matter int64) (list []string, err error) {
+	db := dbConnect()
+
+	err = db.Select(&list, "SELECT name FROM studies WHERE matter_id = ?", matter)
+	if err != nil {
+		printErr("Unable to get data", "GetStudies", err)
+	}
+	return list, err
+}
+
 func getMatters() (list []string, err error) {
 	db := dbConnect()
 
@@ -67,12 +77,12 @@ func getLevels() (list []string, err error) {
 	return list, err
 }
 
-func getLanguages() (list []string, err error) {
+func getSubjects(matterId int64) (list []string, err error) {
 	db := dbConnect()
 
-	err = db.Select(&list, "SELECT name FROM languages")
+	err = db.Select(&list, "SELECT name FROM subjects WHERE matter_id = ?", matterId)
 	if err != nil {
-		printErr("get data", "getLanguages", err)
+		printErr("get data", "getSubjects", err)
 	}
 	return list, err
 }
@@ -269,15 +279,15 @@ func getExercices(id int64, aType string, studies_id string, campus_id string, m
 		}
 
 		// now get exercices
-		err = db.Select(&exos, "SELECT exercices.level_id AS level, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, DATE(exercices.due_at) AS due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
+		err = db.Select(&exos, "SELECT exercices.level_id AS level, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, DATE(exercices.due_at) AS due_at, exercices.description, matters.name AS matter, 0 AS score, IFNULL(subjects.name, '') AS subject, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN subjects ON subjects.id = exercices.subject_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
 	} else {
 
 		err = db.Select(&exos, `
-		SELECT levels.name AS level, exercices.id, exercices.name AS name, exercices.git_path, CASE WHEN CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) THEN "Aujourd'hui" ELSE DATE(exercices.due_at) END AS due_at, exercices.description, matters.name AS matter, 0 AS score, languages.name AS language, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN languages ON languages.id = exercices.language_id LEFT JOIN users on users.id = exercices.user_id LEFT JOIN levels ON exercices.level_id = levels.id WHERE users.campus_id = ? AND exercices.matter_id = ? AND YEAR(exercices.due_at) = YEAR(NOW()) 
+		SELECT levels.name AS level, exercices.id, exercices.name AS name, exercices.git_path, CASE WHEN CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) THEN "Aujourd'hui" ELSE DATE(exercices.due_at) END AS due_at, exercices.description, matters.name AS matter, 0 AS score, IFNULL(subjects.name, "") AS subject, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN subjects ON subjects.id = exercices.subject_id LEFT JOIN users on users.id = exercices.user_id LEFT JOIN levels ON exercices.level_id = levels.id WHERE users.campus_id = ? AND exercices.matter_id = ? AND YEAR(exercices.due_at) = YEAR(NOW()) 
 		AND IF(? != "", DATE(exercices.due_at) = DATE(?), 1) 
 		AND IF(? != "", exercices.name LIKE ?, 1)
 		AND IF(? != "", levels.name = ?, 1)
-		AND IF(? != "", languages.name = ?, 1) ORDER BY exercices.due_at ASC`, campus_id, matter_id, params.Date, params.Date, params.Name, "%"+params.Name+"%", params.Level, params.Level, params.Language, params.Language)
+		AND IF(? != "", subjects.name = ?, 1) ORDER BY exercices.due_at ASC`, campus_id, matter_id, params.Date, params.Date, params.Name, "%"+params.Name+"%", params.Level, params.Level, params.Subject, params.Subject)
 	}
 
 	if err != nil {
@@ -324,11 +334,28 @@ func updateParams(id int64, pic string, repo string, campus string, studies stri
 	return err
 }
 
-func postExo(exoName string, gitPath string, date string, desc string, level string, matter string, language string, bareme string, user_id int64) (err error) {
+func postExo(exoName string, gitPath string, date string, desc string, level string, matter int64, subject string, bareme string, user_id int64) (err error) {
 
 	db := dbConnect()
 
-	_, err = db.Exec("INSERT INTO exercices (name, git_path, due_at, description, level_id, matter_id, language_id, bareme, user_id) VALUES (?, ?, ?, ?, (SELECT id FROM levels WHERE name = ?), (SELECT id FROM matters WHERE name = ?), (SELECT id FROM languages WHERE name = ?), ?, ?)", exoName, gitPath, date, desc, level, matter, language, bareme, user_id)
+	_, err = db.Exec(`
+	INSERT INTO exercices (
+		name, 
+		git_path, 
+		due_at, 
+		description, 
+		level_id, 
+		matter_id, 
+		subject_id, 
+		bareme, 
+		user_id
+		) VALUES (
+			?, ?, ?, ?, 
+			(SELECT id FROM levels WHERE name = ?), 
+			?,
+			(SELECT id FROM subjects WHERE name = ?),
+			 ?, ?
+		)`, exoName, gitPath, date, desc, level, matter, subject, bareme, user_id)
 
 	if err != nil {
 		printErr("insert exercice", "postExo", err)
@@ -337,11 +364,22 @@ func postExo(exoName string, gitPath string, date string, desc string, level str
 
 }
 
-func putExo(exoName string, gitPath string, date string, desc string, level string, matter string, language string, bareme string, user_id int64, exo_id string) (err error) {
+func putExo(exoName string, gitPath string, date string, desc string, level string, matter int64, subject string, bareme string, user_id int64, exo_id string) (err error) {
 
 	db := dbConnect()
 
-	_, err = db.Exec("UPDATE exercices SET name = ?, git_path = ?, due_at = ?, description = ?, level_id = (SELECT id FROM levels WHERE name = ?), matter_id = (SELECT id FROM matters WHERE name = ?), language_id = (SELECT id FROM languages WHERE name = ?), bareme = ? WHERE user_id = ? AND id = ?", exoName, gitPath, date, desc, level, matter, language, bareme, user_id, exo_id)
+	_, err = db.Exec(`
+	UPDATE exercices SET 
+		name = ?, 
+		git_path = ?, 
+		due_at = ?, 
+		description = ?, 
+		level_id = (SELECT id FROM levels WHERE name = ?), 
+		matter_id = ?, 
+		subject_id = (SELECT id FROM subjects WHERE name = ?), 
+		bareme = ? 
+		WHERE user_id = ? AND id = ?`,
+		exoName, gitPath, date, desc, level, matter, subject, bareme, user_id, exo_id)
 
 	if err != nil {
 		printErr("update exercice", "putExo", err)
@@ -375,13 +413,13 @@ func getExoDetails(exo_id string, user_id int64) (exo Exos, err error) {
 		exercices.description, 
 		matters.name AS matter, 
 		0 AS score, 
-		languages.name AS language, 
+		subjects.name AS subject, 
 		exercices.bareme, 
 		CONCAT(users.name, ' ', users.surname) AS creator, 
 		exercices.created 
 	FROM exercices 
 		LEFT JOIN matters ON exercices.matter_id = matters.id 
-		LEFT JOIN languages ON languages.id = exercices.language_id 
+		LEFT JOIN subjects ON subjects.id = exercices.subject_id 
 		LEFT JOIN users ON users.id = exercices.user_id 
 		LEFT JOIN levels ON levels.id = exercices.level_id
 	WHERE exercices.user_id = ? AND exercices.id = ?`,
@@ -471,18 +509,18 @@ func getStudentScoring(student_id string) (studentScoring Student, err error) {
 	// get score by lang
 	err = db.Select(&studentScoring.ScoreByLang, `
 	SELECT 
-		languages.name AS lang,
+		subjects.name AS lang,
 		IFNULL(SUM(IF(users.id = ?, rendus.score, 0)), 0) AS score_by_lang,
 		IFNULL(Cast(AVG(rendus.score) AS Int), 0) AS moy_score
 	FROM rendus
 		JOIN exercices ON exercices.id = rendus.exercice_id
-		JOIN languages ON exercices.language_id = languages.id
+		JOIN subjects ON exercices.subject_id = subjects.id
 		JOIN users ON rendus.student_id = users.id
 		JOIN studies ON studies.id = users.studies_id
 		JOIN matters ON matters.id = studies.matter_id
 		JOIN levels ON studies.level_id = levels.id
 		WHERE users.campus_id = ? AND (matters.id = ? OR (SELECT studies.matter_id FROM studies WHERE studies.id = ?) = matters.id) AND levels.id = ?
-		GROUP BY languages.id;
+		GROUP BY subjects.id;
 	`, student_id, campus_id, matter_id, studies_id, level_id)
 
 	// get sample days data
@@ -506,12 +544,12 @@ func getStudentScoring(student_id string) (studentScoring Student, err error) {
 		SELECT 
 			exercices.name AS exo_name,
 			exercices.git_path AS repo,
-			languages.name AS exo_lang,
+			subjects.name AS exo_lang,
 			rendus.score AS exo_score,
 			exercices.bareme AS exo_total
 		FROM rendus
 			JOIN exercices ON exercices.id = rendus.exercice_id
-			JOIN languages ON languages.id = exercices.language_id
+			JOIN subjects ON subjects.id = exercices.subject_id
 		WHERE 
 			rendus.student_id = ?
 			AND DATE(rendus.created) = ?
@@ -543,10 +581,10 @@ func getAllStudentScoring(campus_id int64, matter_id int64, params OverviewSearc
 	// get score by lang
 	err = db.Select(&studentScoring.ScoreByLang, `
 	SELECT
-		languages.name AS lang,
+		subjects.name AS lang,
 		IFNULL(Cast(AVG(IF(studies.id IS NULL,0, rendus.score)) AS Int),0) AS moy_score
 	FROM exercices
-		JOIN languages ON exercices.language_id = languages.id
+		JOIN subjects ON exercices.subject_id = subjects.id
 		JOIN users AS u1 ON exercices.user_id = u1.id
 		JOIN levels ON levels.id = exercices.level_id
 		LEFT JOIN rendus ON exercices.id = rendus.exercice_id
@@ -554,7 +592,7 @@ func getAllStudentScoring(campus_id int64, matter_id int64, params OverviewSearc
 		LEFT JOIN studies ON studies.id = u2.studies_id AND IF(? != "", studies.name LIKE ?, 1)
 	WHERE exercices.matter_id = ? AND u1.campus_id = ? 
 	AND IF(? != "", levels.name LIKE ?, 1)
-	GROUP BY languages.id;
+	GROUP BY subjects.id;
 	`, params.Studies, params.Studies, matter_id, campus_id, params.Level, params.Level)
 
 	if err != nil {
@@ -567,12 +605,12 @@ func getAllStudentScoring(campus_id int64, matter_id int64, params OverviewSearc
 			SELECT
 				IFNULL(Cast(AVG(exercices.bareme) AS Int), 0)
 			FROM exercices
-			JOIN languages ON exercices.language_id = languages.id
+			JOIN subjects ON exercices.subject_id = subjects.id
 			JOIN users ON exercices.user_id = users.id
 			JOIN levels ON levels.id = exercices.level_id
-			WHERE exercices.matter_id = ? AND users.campus_id = ? AND languages.name = ?
+			WHERE exercices.matter_id = ? AND users.campus_id = ? AND subjects.name = ?
 			AND IF(? != "", levels.name LIKE ?, 1)
-			GROUP BY languages.id;
+			GROUP BY subjects.id;
 		`, matter_id, campus_id, lang.Lang, params.Level, params.Level).Scan(&studentScoring.ScoreByLang[i].TotalPoints)
 		if err != nil {
 			printErr("get total points by lang", "getAllStudentScoring", err)
@@ -604,11 +642,11 @@ func getAllStudentScoring(campus_id int64, matter_id int64, params OverviewSearc
 		SELECT
 			exercices.name AS exo_name,
 			exercices.git_path AS repo,
-			languages.name AS exo_lang,
+			subjects.name AS exo_lang,
 			IFNULL(Cast(AVG(IF(studies.id IS NULL,0, rendus.score)) AS Int),0) AS exo_score,
 			exercices.bareme AS exo_total
 		FROM exercices
-		JOIN languages ON exercices.language_id = languages.id
+		JOIN subjects ON exercices.subject_id = subjects.id
 		JOIN users AS u1 ON exercices.user_id = u1.id
 		JOIN levels ON levels.id = exercices.level_id
 		LEFT JOIN rendus ON exercices.id = rendus.exercice_id
@@ -702,14 +740,14 @@ func getUserData(id int64, data Export) (Export, error) {
 					levels.name AS level_name,
 					exercices.matter_id, 
 					matters.name AS matter_name,
-					exercices.language_id,
-					languages.name AS language_name, 
+					exercices.subject_id,
+					subject.name AS subject_name, 
 					exercices.bareme,
 					exercices.created, 
 					exercices.modified
 				FROM exercices
 					JOIN matters ON exercices.matter_id = matters.id
-					JOIN languages ON exercices.language_id = languages.id
+					JOIN subjects ON exercices.ssubjectd = subject.id
 					JOIN levels ON exercices.level_id = levels.id
 					JOIN users ON exercices.user_id = users.id
 				WHERE exercices.id = ?
@@ -734,14 +772,14 @@ func getUserData(id int64, data Export) (Export, error) {
 				levels.name AS level_name,
 				exercices.matter_id, 
 				matters.name AS matter_name,
-				exercices.language_id,
-				languages.name AS language_name, 
+				exercices.subject_id,
+				subjects.name AS subject_name, 
 				exercices.bareme,
 				exercices.created, 
 				exercices.modified
 			FROM exercices
 				JOIN matters ON exercices.matter_id = matters.id
-				JOIN languages ON exercices.language_id = languages.id
+				JOIN subjects ON exercices.subject_id = subjects.id
 				JOIN levels ON exercices.level_id = levels.id
 				JOIN users ON exercices.user_id = users.id
 			WHERE exercices.user_id = ?

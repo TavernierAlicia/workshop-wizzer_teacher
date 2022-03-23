@@ -55,20 +55,24 @@
           <td>Formation</td>
           <td>Score</td>
         </tr>
-        {{ range .students }}
-        <tr class="students"
-        
-        {{ if ne $.student 1 }}
-        onclick="location.href = '/board/student?id={{ .Id }}'"
-        {{ end }}
+        {{ if ne .studentslength 0 }}
+          {{ range .students }}
+          <tr class="students"
           
-          >
-            <td></td>
-            <td class="student-name">{{ .Name }} {{ .Surname }}</td>
-            <td class="student-studies">{{ .Studies }}</td>
-            <td class="student-level hidden">{{ .Level }}</td>
-            <td>{{ .Score }}</td>
-          </tr>
+          {{ if ne $.student 1 }}
+          onclick="location.href = '/board/student?id={{ .Id }}'"
+          {{ end }}
+            
+            >
+              <td></td>
+              <td class="student-name">{{ .Name }} {{ .Surname }}</td>
+              <td class="student-studies">{{ .Studies }}</td>
+              <td class="student-level hidden">{{ .Level }}</td>
+              <td>{{ .Score }}</td>
+            </tr>
+          {{ end }}
+        {{ else }}
+          <tr><td>Aucun étudiant trouvé</td></tr>
         {{ end }}
       </tbody>
     </table>

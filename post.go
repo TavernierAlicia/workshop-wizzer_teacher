@@ -73,9 +73,9 @@ func subscribtion(c *gin.Context) {
 	}
 
 	// get lists to verify data
-	campuslist, err := getSchools()
-	studieslist, err := getStudies()
-	matterslist, err := getMatters()
+	campuslist, _ := getSchools()
+	studieslist, _ := getStudies()
+	matterslist, _ := getMatters()
 
 	// select inputs
 	if stringInSlice(subForm.Campus, campuslist) {
@@ -258,21 +258,18 @@ func addExo(c *gin.Context) {
 	exoName := strings.Join(c.Request.PostForm["exo-name"], " ")
 	bar := strings.Join(c.Request.PostForm["bar"], " ")
 	exoDate := strings.Join(c.Request.PostForm["exo-date"], " ")
-	exoMatter := strings.Join(c.Request.PostForm["exo-matter"], " ")
 	exoLang := strings.Join(c.Request.PostForm["exo-language"], " ")
 	level := strings.Join(c.Request.PostForm["exo-level"], " ")
 	repo := strings.Join(c.Request.PostForm["repo-path"], " ")
 
-	matterslist, _ := getMatters()
 	levelslist, _ := getLevels()
-	languageslist, _ := getLanguages()
+	subjectslist, _ := getSubjects(infos.MatterID)
 
 	if (description == "" || len(description) > 500) ||
 		(exoName == "" || len(exoName) > 250) ||
 		(bar == "" || len(bar) > 3) ||
 		(exoDate == "" || len(exoDate) != 10) ||
-		(!stringInSlice(exoMatter, matterslist)) ||
-		(!stringInSlice(exoLang, languageslist)) ||
+		(!stringInSlice(exoLang, subjectslist)) ||
 		(!stringInSlice(level, levelslist)) ||
 		(repo == "" || len(exoDate) > 250) {
 		// html w err
@@ -281,7 +278,7 @@ func addExo(c *gin.Context) {
 	}
 
 	// now insert in db
-	err = postExo(exoName, repo, exoDate, description, level, exoMatter, exoLang, bar, infos.Id)
+	err = postExo(exoName, repo, exoDate, description, level, infos.MatterID, exoLang, bar, infos.Id)
 
 	if err != nil {
 		// html w err

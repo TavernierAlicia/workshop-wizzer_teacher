@@ -28,7 +28,7 @@ type SubFormInfos struct {
 	Formations []string
 	Matters    []string
 	Levels     []string
-	Languages  []string
+	Subjects   []string
 }
 
 type SessionInfos struct {
@@ -66,7 +66,7 @@ type Exos struct {
 	Description string `db:"description"`
 	Matter      string `db:"matter"`
 	Score       int64  `db:"score"`
-	Language    string `db:"language"`
+	Subject     string `db:"subject"`
 	Bareme      string `db:"bareme"`
 	Level       string `db:"level"`
 	Creator     string `db:"creator"`
@@ -74,10 +74,10 @@ type Exos struct {
 }
 
 type exoSearch struct {
-	Name     string
-	Date     string
-	Level    string
-	Language string
+	Name    string
+	Date    string
+	Level   string
+	Subject string
 }
 
 type studentRank struct {
@@ -171,22 +171,22 @@ type User struct {
 }
 
 type Exercises struct {
-	Id           int64  `db:"id"`
-	Name         string `db:"name"`
-	Path         string `db:"git_path"`
-	Due          string `db:"due_at"`
-	Description  string `db:"description"`
-	Creator      string `db:"creator"`
-	LevelID      int64  `db:"level_id"`
-	LevelName    string `db:"level_name"`
-	MatterID     int64  `db:"matter_id"`
-	MatterName   string `db:"matter_name"`
-	LanguageID   int64  `db:"language_id"`
-	LanguageName string `db:"language_name"`
-	Bareme       int64  `db:"bareme"`
-	Created      string `db:"created"`
-	Modified     string `db:"modified"`
-	Rendus       []Grades
+	Id          int64  `db:"id"`
+	Name        string `db:"name"`
+	Path        string `db:"git_path"`
+	Due         string `db:"due_at"`
+	Description string `db:"description"`
+	Creator     string `db:"creator"`
+	LevelID     int64  `db:"level_id"`
+	LevelName   string `db:"level_name"`
+	MatterID    int64  `db:"matter_id"`
+	MatterName  string `db:"matter_name"`
+	SubjectID   int64  `db:"subject_id"`
+	SubjectName string `db:"subject_name"`
+	Bareme      int64  `db:"bareme"`
+	Created     string `db:"created"`
+	Modified    string `db:"modified"`
+	Rendus      []Grades
 }
 
 // notes rendues par le prof ou notes reçues par l'élève

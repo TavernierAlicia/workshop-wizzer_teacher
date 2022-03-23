@@ -58,12 +58,17 @@
           <td>Moyenne du Bootcamp</td>
           <td>Points disponibles</td>
         </tr>
-        {{ range .studentScoring.ScoreByLang }}
-          <tr>
-            <td>{{ .Lang }}</td>
-            <td>{{ .Moy }}</td>
-            <td>{{ .TotalPoints }}</td>
-          </tr>
+        {{ if ne .tablength 0 }}
+          {{ range .studentScoring.ScoreByLang }}
+            <tr>
+              <td>{{ .Lang }}</td>
+              <td>{{ .Moy }}</td>
+              <td>{{ .TotalPoints }}</td>
+            </tr>
+          {{ end }}
+
+        {{ else }}
+          <tr><td>Aucune notation pour le moment</td></tr>
         {{ end }}
 
 
@@ -80,16 +85,20 @@
           <tr>
             <td>Nom</td>
             <td>Repo Github</td>
-            <td>Language</td>
+            <td>Sujet</td>
             <td>Moyenne</td>
           </tr>
-          {{ range .Exos }}
-            <tr>
-              <td>{{ .Name }}</td>
-              <td>{{ .Repo }}</td>
-              <td>{{ .Lang }}</td>
-              <td>{{ .Score }}/{{ .Total }}</td>
-            </tr>
+          {{ if ne $.exolength 0 }}
+            {{ range .Exos }}
+              <tr>
+                <td>{{ .Name }}</td>
+                <td>{{ .Repo }}</td>
+                <td>{{ .Lang }}</td>
+                <td>{{ .Score }}/{{ .Total }}</td>
+              </tr>
+            {{ end }}
+          {{ else }}
+            <tr><td>Aucun exercice trouvé</td></tr>
           {{ end }}
 
         {{ end }}

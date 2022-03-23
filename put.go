@@ -150,21 +150,18 @@ func editExo(c *gin.Context) {
 	exoName := strings.Join(c.Request.PostForm["exo-name"], " ")
 	bar := strings.Join(c.Request.PostForm["bar"], " ")
 	exoDate := strings.Join(c.Request.PostForm["exo-date"], " ")
-	exoMatter := strings.Join(c.Request.PostForm["exo-matter"], " ")
 	exoLang := strings.Join(c.Request.PostForm["exo-language"], " ")
 	level := strings.Join(c.Request.PostForm["exo-level"], " ")
 	repo := strings.Join(c.Request.PostForm["repo-path"], " ")
 
-	matterslist, _ := getMatters()
 	levelslist, _ := getLevels()
-	languageslist, _ := getLanguages()
+	subjectslist, _ := getSubjects(infos.MatterID)
 
 	if (description == "" || len(description) > 500) ||
 		(exoName == "" || len(exoName) > 250) ||
 		(bar == "" || len(bar) > 3) ||
 		(exoDate == "" || len(exoDate) != 10) ||
-		(!stringInSlice(exoMatter, matterslist)) ||
-		(!stringInSlice(exoLang, languageslist)) ||
+		(!stringInSlice(exoLang, subjectslist)) ||
 		(!stringInSlice(level, levelslist)) ||
 		(repo == "" || len(exoDate) > 250) {
 		// html w err
@@ -173,7 +170,7 @@ func editExo(c *gin.Context) {
 	}
 
 	// now insert in db
-	err = putExo(exoName, repo, exoDate, description, level, exoMatter, exoLang, bar, infos.Id, exo_id)
+	err = putExo(exoName, repo, exoDate, description, level, infos.MatterID, exoLang, bar, infos.Id, exo_id)
 
 	if err != nil {
 		// html w err

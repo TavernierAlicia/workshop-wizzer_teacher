@@ -77,35 +77,31 @@ func showSubInfos(c *gin.Context) {
 	c.JSON(200, infos)
 }
 
-func showLvlLang(c *gin.Context) {
+// func showLvlLang(c *gin.Context) {
 
-	languages, err := getLanguages()
-	if err != nil {
-		c.JSON(500, nil)
-		return
-	}
+// 	subjects, err := getSubjects()
+// 	if err != nil {
+// 		c.JSON(500, nil)
+// 		return
+// 	}
 
-	levels, err := getLevels()
-	if err != nil {
-		c.JSON(500, nil)
-		return
-	}
+// 	levels, err := getLevels()
+// 	if err != nil {
+// 		c.JSON(500, nil)
+// 		return
+// 	}
 
-	infos := &SubFormInfos{
-		Levels:    levels,
-		Languages: languages,
-	}
-	c.JSON(200, infos)
-}
+// 	infos := &SubFormInfos{
+// 		Levels:   levels,
+// 		Subjects: subjects,
+// 	}
+// 	c.JSON(200, infos)
+// }
 
 func getExos(c *gin.Context) {
 
 	// verify type & token
 	data := GetSessionData(sessions.Default(c))
-
-	languagesList, _ := getLanguages()
-	mattersList, _ := getMatters()
-	levelsList, _ := getLevels()
 
 	id, err := checkToken(data.Token)
 	if err != nil || id == 0 {
@@ -114,6 +110,8 @@ func getExos(c *gin.Context) {
 	}
 
 	infos, _ := getUserInfos(data.Token)
+	subjectsList, _ := getSubjects(infos.MatterID)
+	levelsList, _ := getLevels()
 
 	if data.Atype == "student" {
 		params := exoSearch{}
@@ -122,28 +120,27 @@ func getExos(c *gin.Context) {
 		score := getScore(id)
 
 		c.HTML(200, "board.html", map[string]interface{}{
-			"size":          size,
-			"student":       1,
-			"exos":          exos,
-			"score":         score,
-			"infos":         infos,
-			"mattersList":   mattersList,
-			"levelsList":    levelsList,
-			"languagesList": languagesList,
-			"is_delete":     0,
-			"is_edit":       0,
-			"id_add":        0,
-			"is_success":    0,
-			"is_send":       0,
+			"size":         size,
+			"student":      1,
+			"exos":         exos,
+			"score":        score,
+			"infos":        infos,
+			"levelsList":   levelsList,
+			"subjectsList": subjectsList,
+			"is_delete":    0,
+			"is_edit":      0,
+			"id_add":       0,
+			"is_success":   0,
+			"is_send":      0,
 		})
 	} else {
 
 		// getting possible search criterions
 		params := exoSearch{
-			Name:     c.Query("exo-name"),
-			Level:    c.Query("exo-level"),
-			Date:     c.Query("date"),
-			Language: c.Query("exo-language"),
+			Name:    c.Query("exo-name"),
+			Level:   c.Query("exo-level"),
+			Date:    c.Query("date"),
+			Subject: c.Query("exo-language"),
 		}
 
 		// get exos
@@ -198,38 +195,36 @@ func getExos(c *gin.Context) {
 			}
 
 			c.HTML(200, "board.html", map[string]interface{}{
-				"size":          size,
-				"student":       0,
-				"last":          last,
-				"first":         first,
-				"exos":          exos,
-				"infos":         infos,
-				"mattersList":   mattersList,
-				"levelsList":    levelsList,
-				"languagesList": languagesList,
-				"is_delete":     is_delete,
-				"is_edit":       is_edit,
-				"is_add":        is_add,
-				"is_success":    is_success,
-				"is_send":       is_send,
-				"exo_details":   exo_details,
+				"size":         size,
+				"student":      0,
+				"last":         last,
+				"first":        first,
+				"exos":         exos,
+				"infos":        infos,
+				"levelsList":   levelsList,
+				"subjectsList": subjectsList,
+				"is_delete":    is_delete,
+				"is_edit":      is_edit,
+				"is_add":       is_add,
+				"is_success":   is_success,
+				"is_send":      is_send,
+				"exo_details":  exo_details,
 			})
 		} else if data.Atype == "alum" {
 			c.HTML(200, "board.html", map[string]interface{}{
-				"size":          size,
-				"student":       9,
-				"last":          last,
-				"first":         first,
-				"exos":          exos,
-				"infos":         infos,
-				"mattersList":   mattersList,
-				"levelsList":    levelsList,
-				"languagesList": languagesList,
-				"is_delete":     0,
-				"is_edit":       0,
-				"id_add":        0,
-				"is_success":    0,
-				"is_send":       0,
+				"size":         size,
+				"student":      9,
+				"last":         last,
+				"first":        first,
+				"exos":         exos,
+				"infos":        infos,
+				"levelsList":   levelsList,
+				"subjectsList": subjectsList,
+				"is_delete":    0,
+				"is_edit":      0,
+				"id_add":       0,
+				"is_success":   0,
+				"is_send":      0,
 			})
 		} else {
 			c.AbortWithError(http.StatusBadRequest, err)
@@ -307,7 +302,7 @@ func getRank(c *gin.Context) {
 
 	// display html
 	c.HTML(200, "rank.html", map[string]interface{}{
-		"infos": infos, "student": student, "score": score, "students": students,
+		"studentslength": len(students), "infos": infos, "student": student, "score": score, "students": students,
 	})
 
 }
@@ -389,12 +384,20 @@ func getOverview(c *gin.Context) {
 		return
 	}
 
-	studiesList, _ := getStudies()
+	studiesList, _ := getStudiesByMatter(infos.MatterID)
 	levelsList, _ := getLevels()
 
 	// return html
+	exolen := len(studentScore.DaysDetails)
+	tablen := len(studentScore.ScoreByLang)
+
 	c.HTML(200, "overview.html", map[string]interface{}{
-		"levelsList": levelsList, "studiesList": studiesList, "infos": infos, "studentScoring": studentScore,
+		"tablength":      tablen,
+		"exolength":      exolen,
+		"levelsList":     levelsList,
+		"studiesList":    studiesList,
+		"infos":          infos,
+		"studentScoring": studentScore,
 	})
 }
 
@@ -518,7 +521,7 @@ func exportData(c *gin.Context) {
 	}
 
 	// now get data
-	userData, err = getUserData(infos.Id, userData)
+	userData, _ = getUserData(infos.Id, userData)
 
 	toJson, err := json.Marshal(userData)
 	if err != nil {
@@ -592,7 +595,7 @@ func exportData(c *gin.Context) {
 			rows = append(rows, []string{"", "", "", "Professeur", userData.Grades[i].ExoDetails.Creator})
 			rows = append(rows, []string{"", "", "", "Niveau", userData.Grades[i].ExoDetails.LevelName})
 			rows = append(rows, []string{"", "", "", "Matière", userData.Grades[i].ExoDetails.MatterName})
-			rows = append(rows, []string{"", "", "", "Language", userData.Grades[i].ExoDetails.LanguageName})
+			rows = append(rows, []string{"", "", "", "Subject", userData.Grades[i].ExoDetails.SubjectName})
 			rows = append(rows, []string{"", "", "", "Barème", strconv.FormatInt(userData.Grades[i].ExoDetails.Bareme, 10)})
 			rows = append(rows, []string{"", "", "", "Crée le", userData.Grades[i].ExoDetails.Created})
 			rows = append(rows, []string{"", "", "", "Modifié le", userData.Grades[i].ExoDetails.Modified})
@@ -620,11 +623,11 @@ func exportData(c *gin.Context) {
 		rows = append(rows, []string{"Matière", userData.Infos.MatterName})
 		rows = append(rows, []string{""})
 		rows = append(rows, []string{"", "EXERCICES CREES", ""})
-		rows = append(rows, []string{"Id", "Nom", "Git", "Date Rendu", "Description", "Niveau", "Mattière", "Language", "Bareme", "Crée", "Modifié", "", "RENDUS"})
+		rows = append(rows, []string{"Id", "Nom", "Git", "Date Rendu", "Description", "Niveau", "Mattière", "Sujet", "Bareme", "Crée", "Modifié", "", "RENDUS"})
 
 		for i, _ := range userData.Exos {
 
-			rows = append(rows, []string{strconv.FormatInt(userData.Exos[i].Id, 10), userData.Exos[i].Name, userData.Exos[i].Path, userData.Exos[i].Due, userData.Exos[i].Description, userData.Exos[i].LevelName, userData.Exos[i].MatterName, userData.Exos[i].LanguageName, strconv.FormatInt(userData.Exos[i].Bareme, 10), userData.Exos[i].Created, userData.Exos[i].Modified, "", "RENDUS"})
+			rows = append(rows, []string{strconv.FormatInt(userData.Exos[i].Id, 10), userData.Exos[i].Name, userData.Exos[i].Path, userData.Exos[i].Due, userData.Exos[i].Description, userData.Exos[i].LevelName, userData.Exos[i].MatterName, userData.Exos[i].SubjectName, strconv.FormatInt(userData.Exos[i].Bareme, 10), userData.Exos[i].Created, userData.Exos[i].Modified, "", "RENDUS"})
 			for j, _ := range userData.Exos[i].Rendus {
 				rows = append(rows, []string{"", "", "", "", "", "", "", "", "", "", "", "", "", "Id", strconv.FormatInt(userData.Exos[i].Rendus[j].Id, 10)})
 				rows = append(rows, []string{"", "", "", "", "", "", "", "", "", "", "", "", "", "Exercice Id", strconv.FormatInt(userData.Exos[i].Rendus[j].ExerciceID, 10)})

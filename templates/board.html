@@ -49,7 +49,11 @@
             <td>Nom</td>
             <td>Date</td>
             <td>Repo</td>
-            <td>Language</td>
+            {{ if eq .infos.Matter "Développement" }}
+              <td>Language</td>
+            {{ else }}
+              <td>Sujet</td>
+            {{ end }}
             <td>Bareme</td>
           </tr>
           {{ range .exos }}
@@ -58,7 +62,7 @@
               <td>{{ .Due }}</td>
               <!-- TODO INTEGRATE -->
               <td class="repo" id="repo">{{ .GitPath }}</td>
-              <td>{{ .Language }}</td>
+              <td>{{ .Subject }}</td>
               <td>/{{ .Bareme }}</td>
             </tr>
             <tr class="desc"><td>{{ .Description }}</td></tr>
@@ -96,11 +100,16 @@
                 
           </select>
         </div>
+        
         <div id="languages">
-          <label for="exo-language">par language:</label>
+          {{ if eq .infos.Matter "Développement" }}
+            <label for="exo-language">par language:</label>
+          {{ else }}
+            <label for="exo-language">par sujet:</label>
+          {{ end }}
           <select name="exo-language" id="exo-language">
             <option value="">-- Tous --</option>
-            {{ range .languagesList }}
+            {{ range .subjectsList }}
               <option value="{{ . }}">{{ . }}</option>
             {{ end }}
           </select>
@@ -117,7 +126,11 @@
             <td>Nom</td>
             <td>Date</td>
             <td>Repo</td>
-            <td>Language</td>
+            {{ if eq .infos.Matter "Développement" }}
+              <td>Language</td>
+            {{ else }}
+              <td>Sujet</td>
+            {{ end }}
             <td>Niveau</td>
             <td>Bareme</td>
             {{ if eq .student 0}}
@@ -129,7 +142,7 @@
               <td><div class="arrow down"></div>{{ .Name }}</td>
               <td>{{ .Due }}</td>
               <td>{{ .GitPath }}</td>
-              <td>{{ .Language }}</td>
+              <td>{{ .Subject }}</td>
               <td>{{ .Level }}</td>
               <td>/{{ .Bareme }}</td>
               {{ if eq $.student 0 }}
@@ -151,11 +164,6 @@
   </section>
 
 
-  <!-- <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div> -->
-    <!-- <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform"> -->
-      
-
-    <!-- </div> -->
     <!-- ALERT MESSAGES -->
     {{ if eq .is_delete 1 }}
     <div id="hover"></div>
@@ -211,31 +219,26 @@
           <label for="exo-date">Date de rendu</label>
           <input type="date" id="exo-date" name="exo-date" value="{{ .exo_details.Due }}" required>
   
-          <div class="matter">
-            <label for="exo-matter">Matière</label>
-            <select name="exo-matter" id="exo-matter" required>
-              {{ range .mattersList }}
-                {{ if eq $.exo_details.Matter . }}
-                  <option selected value="{{ $.exo_details.Matter }}">{{ $.exo_details.Matter }}</option>
-                {{ else }}
-                  <option value="{{ . }}">{{ . }}</option>
-                {{ end }}
-              {{ end }}
-            </select>
-            
-          </div>
+
+
+          
           <div id="languages">
-            <label for="exo-language">Language</label>
+            {{ if eq .infos.Matter "Développement" }}
+              <label for="exo-language">Language</label>
+            {{ else }}
+              <label for="exo-language">Sujet</label>
+            {{ end}}
             <select name="exo-language" id="exo-language" required>
-              {{ range .languagesList }}
-                {{ if eq $.exo_details.Language . }}
-                  <option selected value="{{ $.exo_details.Language }}">{{ $.exo_details.Language }}</option>
+              {{ range .subjectsList }}
+                {{ if eq $.exo_details.Subject . }}
+                  <option selected value="{{ $.exo_details.Subject }}">{{ $.exo_details.Subject }}</option>
                 {{ else }}
                   <option value="{{ . }}">{{ . }}</option>
                 {{ end }}
               {{ end }}
             </select>
           </div>
+
           <div id="level">
   
           <label for="exo-level">Niveau</label>
@@ -290,25 +293,21 @@
           <label for="exo-date">Date de rendu</label>
           <input type="date" id="exo-date" name="exo-date" value="" required>
   
-          <div class="matter">
-            <label for="exo-matter">Matière</label>
-            <select name="exo-matter" id="exo-matter" required>
-              <option disabled value="">-- Tous --</option>
-              {{ range .mattersList }}
-                <option value="{{ . }}">{{ . }}</option>
-              {{ end }}
-            </select>
-            
-          </div>
+          
           <div id="languages">
-            <label for="exo-language">Langage</label>
+            {{ if eq .infos.Matter "Développement" }}
+              <label for="exo-language">Langage</label>
+            {{ else }}
+              <label for="exo-language">Sujet</label>
+            {{ end }}
             <select name="exo-language" id="exo-language" required>
               <option disabled value="">-- Tous --</option>
-              {{ range .languagesList }}
+              {{ range .subjectsList }}
                 <option value="{{ . }}">{{ . }}</option>
               {{ end }}
             </select>
           </div>
+
           <div id="level">
   
           <label for="exo-level">Niveau</label>
@@ -381,7 +380,8 @@
 
     }
 
-  </script>
+  </script> 
+
   <!-- TODO INTEGRATE -->
   <script type="text/javascript" src="../js/verifGit.js"></script>
 

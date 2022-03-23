@@ -83,7 +83,7 @@ func main() {
 
 	// misc
 	router.GET("/subInfos", showSubInfos)
-	router.GET("/getLvlLang", showLvlLang)
+	// router.GET("/getLvlLang", showLvlLang)
 
 	router.POST("/results", recordGrade)
 

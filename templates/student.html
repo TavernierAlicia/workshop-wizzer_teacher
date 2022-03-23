@@ -70,7 +70,11 @@
           <tr>
             <td>Nom</td>
             <td>Repo Github</td>
-            <td>Language</td>
+            {{ if eq .infos.Matter "Développement" }}
+              <td>Language</td>
+            {{ else }}
+              <td>Sujet</td>
+            {{ end }}
             <td>Score</td>
           </tr>
           {{ range .Exos }}
