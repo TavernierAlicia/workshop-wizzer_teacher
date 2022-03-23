@@ -118,7 +118,7 @@ func deleteAccount(c *gin.Context) {
 	}
 
 	message := ` 
-	<p> Conformément à votre demande, votre compte ainsi que toutes les données accociées à celui-ci ont été supprimés. </p> 
+	<p> Conformément à votre demande, votre compte ainsi que toutes les données associées à celui-ci ont été supprimées. </p> 
 	<p> Wizzer Teacher vous souhaite une bonne continuation! </p>
 	`
 	_ = confirmDelete(infos.Mail, message)

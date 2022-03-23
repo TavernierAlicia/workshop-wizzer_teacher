@@ -82,6 +82,14 @@ func after(value string, a string) string {
 	return value[adjustedPos:len(value)]
 }
 
+func before(value string, a string) string {
+	pos := strings.Index(value, a)
+	if pos == -1 {
+		return ""
+	}
+	return value[0:pos]
+}
+
 func deleteOldPic(pic string) {
 	if pic != "pictures/no-pic.svg" {
 		err := os.Remove(pic)

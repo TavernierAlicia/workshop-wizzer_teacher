@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -18,6 +17,11 @@ func subscribtion(c *gin.Context) {
 
 	// Set data
 	c.Request.ParseForm()
+
+	if strings.Join(c.Request.PostForm["legal"], " ") != "on" {
+		c.HTML(200, "subscribe.html", map[string]interface{}{"send": 1, "ok": 0})
+		return
+	}
 
 	subForm.AccountType = strings.Join(c.Request.PostForm["account"], " ")
 	subForm.Name = strings.Join(c.Request.PostForm["name"], " ")
@@ -158,7 +162,6 @@ func connect(c *gin.Context) {
 	if infos.Type == "student" || infos.Type == "alum" || infos.Type == "prof" {
 		c.Redirect(http.StatusFound, "/board/exercices")
 	} else {
-		fmt.Println("ddd")
 		c.HTML(200, "connect.html", map[string]interface{}{"send": 1, "ok": 0})
 	}
 

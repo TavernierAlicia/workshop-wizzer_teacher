@@ -143,3 +143,59 @@ type OverviewSearch struct {
 	Level   string
 	Studies string
 }
+
+// export csv data
+type Export struct {
+	Infos  User
+	Exos   []Exercises
+	Grades []Grades
+}
+
+type User struct {
+	Id          int64
+	Name        string
+	Surname     string
+	Mail        string
+	Repo        string
+	Type        string
+	CampusID    int64
+	CampusName  string
+	StudiesID   int64
+	StudiesName string
+	MatterID    int64
+	MatterName  string
+	Pic         string
+	Level       string
+	Created     string `db:"created"`
+	Modified    string `db:"modified"`
+}
+
+type Exercises struct {
+	Id           int64  `db:"id"`
+	Name         string `db:"name"`
+	Path         string `db:"git_path"`
+	Due          string `db:"due_at"`
+	Description  string `db:"description"`
+	Creator      string `db:"creator"`
+	LevelID      int64  `db:"level_id"`
+	LevelName    string `db:"level_name"`
+	MatterID     int64  `db:"matter_id"`
+	MatterName   string `db:"matter_name"`
+	LanguageID   int64  `db:"language_id"`
+	LanguageName string `db:"language_name"`
+	Bareme       int64  `db:"bareme"`
+	Created      string `db:"created"`
+	Modified     string `db:"modified"`
+	Rendus       []Grades
+}
+
+// notes rendues par le prof ou notes reçues par l'élève
+type Grades struct {
+	Id          int64  `db:"id"`
+	ExerciceID  int64  `db:"exercice_id"`
+	StudentID   int64  `db:"student_id"`
+	StudentName string `db:"student_name"`
+	Score       int64  `db:"score"`
+	Created     string `db:"created"`
+	ExoDetails  Exercises
+}

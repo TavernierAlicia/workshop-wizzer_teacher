@@ -557,8 +557,6 @@ func getAllStudentScoring(campus_id int64, matter_id int64, params OverviewSearc
 	GROUP BY languages.id;
 	`, params.Studies, params.Studies, matter_id, campus_id, params.Level, params.Level)
 
-	fmt.Println(campus_id)
-	fmt.Println(matter_id)
 	if err != nil {
 		printErr("get score by lang", "getAllStudentScoring", err)
 		return studentScoring, err
@@ -652,4 +650,126 @@ func deleteAllUserData(id int64) (err error) {
 	}
 
 	return err
+}
+
+func getUserData(id int64, data Export) (Export, error) {
+
+	db := dbConnect()
+
+	// get created/modified
+
+	err := db.QueryRow(`
+		SELECT created, modified
+		FROM users
+		WHERE id = ?
+	`, id).Scan(&data.Infos.Created, &data.Infos.Modified)
+
+	if err != nil {
+		printErr("get created and modified for profile", "getUserData", err)
+		return data, err
+	}
+
+	if data.Infos.Type == "student" {
+
+		// now get for student
+		err = db.Select(&data.Grades, `
+			SELECT 
+				rendus.id, 
+				rendus.exercice_id,
+				rendus.student_id,
+				CONCAT(users.name, " ", users.surname) AS student_name,
+				rendus.score,
+				rendus.created
+			FROM rendus
+				JOIN users ON rendus.student_id = users.id
+			WHERE rendus.student_id = ?
+		`, id)
+
+		if err != nil {
+			printErr("get rendus data", "getUserData", err)
+		}
+
+		for i, _ := range data.Grades {
+			err = db.Get(&data.Grades[i].ExoDetails, `
+				SELECT 
+					exercices.id,
+					exercices.name,
+					CONCAT(users.name, " ", users.surname) AS creator,
+					exercices.git_path,
+					exercices.due_at,
+					exercices.description,
+					exercices.level_id,
+					levels.name AS level_name,
+					exercices.matter_id, 
+					matters.name AS matter_name,
+					exercices.language_id,
+					languages.name AS language_name, 
+					exercices.bareme,
+					exercices.created, 
+					exercices.modified
+				FROM exercices
+					JOIN matters ON exercices.matter_id = matters.id
+					JOIN languages ON exercices.language_id = languages.id
+					JOIN levels ON exercices.level_id = levels.id
+					JOIN users ON exercices.user_id = users.id
+				WHERE exercices.id = ?
+				`, data.Grades[i].ExerciceID)
+
+			if err != nil {
+				printErr("get exercices from rendus", "getUserData", err)
+			}
+		}
+	} else if data.Infos.Type == "prof" {
+
+		// get all exercises
+		err = db.Select(&data.Exos, `
+			SELECT 
+				exercices.id,
+				exercices.name,
+				CONCAT(users.name, " ", users.surname) AS creator,
+				exercices.git_path,
+				exercices.due_at,
+				exercices.description,
+				exercices.level_id,
+				levels.name AS level_name,
+				exercices.matter_id, 
+				matters.name AS matter_name,
+				exercices.language_id,
+				languages.name AS language_name, 
+				exercices.bareme,
+				exercices.created, 
+				exercices.modified
+			FROM exercices
+				JOIN matters ON exercices.matter_id = matters.id
+				JOIN languages ON exercices.language_id = languages.id
+				JOIN levels ON exercices.level_id = levels.id
+				JOIN users ON exercices.user_id = users.id
+			WHERE exercices.user_id = ?
+		`, id)
+
+		if err != nil {
+			printErr("get exercices from prof", "getUserData", err)
+		}
+
+		// get corrections by exercice
+		for i, _ := range data.Exos {
+			err = db.Select(&data.Exos[i].Rendus, `
+				SELECT 
+					rendus.id,
+					rendus.student_id,
+					CONCAT(users.name, " ", users.surname) AS student_name,
+					rendus.score,
+					rendus.created
+				FROM rendus 
+					JOIN users ON rendus.student_id = users.id
+				WHERE rendus.exercice_id = ?
+			`, data.Exos[i].Id)
+
+			if err != nil {
+				printErr("get rendus from exercices", "getUserData", err)
+			}
+		}
+	}
+
+	return data, err
 }

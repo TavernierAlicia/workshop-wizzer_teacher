@@ -82,6 +82,29 @@ func confirmDelete(mail string, message string) (err error) {
 	return err
 }
 
-func sendDataMail(mail string, file string) {
+func sendDataMail(mail string, file string, toJson string) (err error) {
+	from := viper.GetString("sendmail.service_mail")
+	pass := viper.GetString("sendmail.service_pwd")
 
+	subject := "Wizzer Teacher - Export de données"
+	//set message
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", from)
+	m.SetHeader("To", mail)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", `
+	<p>Vous trouverez le document contenant toutes vos informations récupérées sur Wizzer Teacher</p>
+	<p>Une version Json est également disponible ci-dessous:</p>
+	<p>`+toJson+`</p>
+	
+	`)
+	m.Attach(file)
+
+	d := gomail.NewPlainDialer("smtp.gmail.com", 587, from, pass)
+
+	if err := d.DialAndSend(m); err != nil {
+		panic(err)
+	}
+	return err
 }

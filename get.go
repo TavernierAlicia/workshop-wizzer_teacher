@@ -1,8 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"encoding/csv"
+	"encoding/json"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -303,8 +305,6 @@ func getRank(c *gin.Context) {
 
 	}
 
-	fmt.Println(students)
-
 	// display html
 	c.HTML(200, "rank.html", map[string]interface{}{
 		"infos": infos, "student": student, "score": score, "students": students,
@@ -465,4 +465,240 @@ func DeleteView(c *gin.Context) {
 	}
 
 	c.HTML(200, "ask-delete.html", map[string]interface{}{"t": token, "send": 0, "ok": 0, "id": id})
+}
+
+func exportData(c *gin.Context) {
+
+	data := GetSessionData(sessions.Default(c))
+
+	id, err := checkToken(data.Token)
+	if err != nil || id == 0 {
+		errToken(c)
+		return
+	}
+
+	infos, err := getUserInfos(data.Token)
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	var userData Export
+
+	userData.Infos = User{
+
+		Id:          infos.Id,
+		Name:        infos.Name,
+		Surname:     infos.Surname,
+		Mail:        infos.Mail,
+		Repo:        infos.Repository,
+		Type:        infos.Type,
+		CampusID:    infos.CampusID,
+		CampusName:  infos.Campus,
+		StudiesID:   infos.StudiesID,
+		StudiesName: infos.Studies,
+		MatterID:    infos.MatterID,
+		MatterName:  infos.Matter,
+		Pic:         infos.Pic,
+		Level:       before(infos.Studies, " "),
+	}
+
+	schools, _ := getSchools()
+	formations, _ := getStudies()
+	matters, _ := getMatters()
+
+	botToken := ""
+	if infos.Type == "prof" {
+		botToken, err = getBotToken(infos.Id)
+
+		if err != nil {
+			botToken = "un problème est survenu, nous vous conseillons de rafraîchir votre botToken"
+		}
+	}
+
+	// now get data
+	userData, err = getUserData(infos.Id, userData)
+
+	toJson, err := json.Marshal(userData)
+	if err != nil {
+		printErr("jsonify data", "exportData", err)
+		c.HTML(200, "parameters.html", map[string]interface{}{
+			"getData":       "failed",
+			"deleteAccount": "no",
+			"botToken":      botToken,
+			"send":          0,
+			"ok":            0,
+			"campus":        schools,
+			"matter":        matters,
+			"studies":       formations,
+			"infos":         infos,
+		})
+		return
+	}
+
+	// now, data to csv
+	filename := "csvs/user-" + strconv.FormatInt(infos.Id, 10) + "_" + time.Now().Format("01-02-2006") + ".csv"
+	file, err := os.Create(filename)
+
+	if err != nil {
+		printErr("create file failed", "ExportData", err)
+		c.HTML(200, "parameters.html", map[string]interface{}{
+			"getData":       "failed",
+			"deleteAccount": "no",
+			"botToken":      botToken,
+			"send":          0,
+			"ok":            0,
+			"campus":        schools,
+			"matter":        matters,
+			"studies":       formations,
+			"infos":         infos,
+		})
+		return
+	}
+
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	var rows [][]string
+	rows = append(rows, []string{"", "INFORMATIONS DU COMPTE", ""})
+	rows = append(rows, []string{"Identifiant", strconv.FormatInt(userData.Infos.Id, 10)})
+	rows = append(rows, []string{"Nom", userData.Infos.Name})
+	rows = append(rows, []string{"Prénom", userData.Infos.Surname})
+	rows = append(rows, []string{"E-Mail", userData.Infos.Mail})
+	rows = append(rows, []string{"Status", userData.Infos.Type})
+	rows = append(rows, []string{"Photo", userData.Infos.Pic})
+	rows = append(rows, []string{"Date d'inscription", userData.Infos.Created})
+	rows = append(rows, []string{"Dernière modification du profil", userData.Infos.Modified})
+	rows = append(rows, []string{"Campus ID", strconv.FormatInt(userData.Infos.CampusID, 10)})
+	rows = append(rows, []string{"Campus", userData.Infos.CampusName})
+
+	if infos.Type == "student" {
+		rows = append(rows, []string{"Niveau", userData.Infos.Level})
+		rows = append(rows, []string{"Classe ID", strconv.FormatInt(userData.Infos.StudiesID, 10)})
+		rows = append(rows, []string{"Classe", userData.Infos.StudiesName})
+		rows = append(rows, []string{"Repository", userData.Infos.Repo})
+		rows = append(rows, []string{""})
+
+		for i, _ := range userData.Grades {
+			rows = append(rows, []string{"", "RENDUS", ""})
+			rows = append(rows, []string{"Id", "Score", "Crée le", "EXERCICE"})
+			rows = append(rows, []string{strconv.FormatInt(userData.Grades[i].Id, 10), strconv.FormatInt(userData.Grades[i].Score, 10), userData.Grades[i].Created})
+			rows = append(rows, []string{"", "", "", "Exo id", strconv.FormatInt(userData.Grades[i].ExoDetails.Id, 10)})
+			rows = append(rows, []string{"", "", "", "Nom", userData.Grades[i].ExoDetails.Name})
+			rows = append(rows, []string{"", "", "", "Git", userData.Grades[i].ExoDetails.Path})
+			rows = append(rows, []string{"", "", "", "Date rendu", userData.Grades[i].ExoDetails.Due})
+			rows = append(rows, []string{"", "", "", "Description", userData.Grades[i].ExoDetails.Description})
+			rows = append(rows, []string{"", "", "", "Professeur", userData.Grades[i].ExoDetails.Creator})
+			rows = append(rows, []string{"", "", "", "Niveau", userData.Grades[i].ExoDetails.LevelName})
+			rows = append(rows, []string{"", "", "", "Matière", userData.Grades[i].ExoDetails.MatterName})
+			rows = append(rows, []string{"", "", "", "Language", userData.Grades[i].ExoDetails.LanguageName})
+			rows = append(rows, []string{"", "", "", "Barème", strconv.FormatInt(userData.Grades[i].ExoDetails.Bareme, 10)})
+			rows = append(rows, []string{"", "", "", "Crée le", userData.Grades[i].ExoDetails.Created})
+			rows = append(rows, []string{"", "", "", "Modifié le", userData.Grades[i].ExoDetails.Modified})
+		}
+
+		err = writer.WriteAll(rows)
+		if err != nil {
+			printErr("fill file failed", "ExportData", err)
+			c.HTML(200, "parameters.html", map[string]interface{}{
+				"getData":       "failed",
+				"deleteAccount": "no",
+				"botToken":      botToken,
+				"send":          0,
+				"ok":            0,
+				"campus":        schools,
+				"matter":        matters,
+				"studies":       formations,
+				"infos":         infos,
+			})
+			return
+		}
+
+	} else if infos.Type == "prof" {
+		rows = append(rows, []string{"Matière ID", strconv.FormatInt(userData.Infos.MatterID, 10)})
+		rows = append(rows, []string{"Matière", userData.Infos.MatterName})
+		rows = append(rows, []string{""})
+		rows = append(rows, []string{"", "EXERCICES CREES", ""})
+		rows = append(rows, []string{"Id", "Nom", "Git", "Date Rendu", "Description", "Niveau", "Mattière", "Language", "Bareme", "Crée", "Modifié", "", "RENDUS"})
+
+		for i, _ := range userData.Exos {
+
+			rows = append(rows, []string{strconv.FormatInt(userData.Exos[i].Id, 10), userData.Exos[i].Name, userData.Exos[i].Path, userData.Exos[i].Due, userData.Exos[i].Description, userData.Exos[i].LevelName, userData.Exos[i].MatterName, userData.Exos[i].LanguageName, strconv.FormatInt(userData.Exos[i].Bareme, 10), userData.Exos[i].Created, userData.Exos[i].Modified, "", "RENDUS"})
+			for j, _ := range userData.Exos[i].Rendus {
+				rows = append(rows, []string{"", "", "", "", "", "", "", "", "", "", "", "", "", "Id", strconv.FormatInt(userData.Exos[i].Rendus[j].Id, 10)})
+				rows = append(rows, []string{"", "", "", "", "", "", "", "", "", "", "", "", "", "Exercice Id", strconv.FormatInt(userData.Exos[i].Rendus[j].ExerciceID, 10)})
+				rows = append(rows, []string{"", "", "", "", "", "", "", "", "", "", "", "", "", "Id Etudiant", strconv.FormatInt(userData.Exos[i].Rendus[j].StudentID, 10)})
+				rows = append(rows, []string{"", "", "", "", "", "", "", "", "", "", "", "", "", "Nom Etudiant", userData.Exos[i].Rendus[j].StudentName})
+				rows = append(rows, []string{"", "", "", "", "", "", "", "", "", "", "", "", "", "Note", strconv.FormatInt(userData.Exos[i].Rendus[j].Score, 10)})
+				rows = append(rows, []string{"", "", "", "", "", "", "", "", "", "", "", "", "", "Crée le", userData.Exos[i].Rendus[j].Created})
+			}
+
+		}
+		err = writer.WriteAll(rows)
+		if err != nil {
+			printErr("fill file failed", "ExportData", err)
+			c.HTML(200, "parameters.html", map[string]interface{}{
+				"getData":       "failed",
+				"deleteAccount": "no",
+				"botToken":      botToken,
+				"send":          0,
+				"ok":            0,
+				"campus":        schools,
+				"matter":        matters,
+				"studies":       formations,
+				"infos":         infos,
+			})
+			return
+		}
+	} else {
+		rows = append(rows, []string{"Matière ID", strconv.FormatInt(userData.Infos.MatterID, 10)})
+		rows = append(rows, []string{"Matière", userData.Infos.MatterName})
+		err = writer.WriteAll(rows)
+		if err != nil {
+			printErr("fill file failed", "ExportData", err)
+			c.HTML(200, "parameters.html", map[string]interface{}{
+				"getData":       "failed",
+				"deleteAccount": "no",
+				"botToken":      botToken,
+				"send":          0,
+				"ok":            0,
+				"campus":        schools,
+				"matter":        matters,
+				"studies":       formations,
+				"infos":         infos,
+			})
+			return
+		}
+	}
+
+	err = sendDataMail(infos.Mail, filename, string(toJson))
+	if err != nil {
+		c.HTML(200, "parameters.html", map[string]interface{}{
+			"getData":       "failed",
+			"deleteAccount": "no",
+			"botToken":      botToken,
+			"send":          0,
+			"ok":            0,
+			"campus":        schools,
+			"matter":        matters,
+			"studies":       formations,
+			"infos":         infos,
+		})
+		return
+	}
+
+	// return html
+	c.HTML(200, "parameters.html", map[string]interface{}{
+		"getData":       "success",
+		"deleteAccount": "no",
+		"botToken":      botToken,
+		"send":          0,
+		"ok":            0,
+		"campus":        schools,
+		"matter":        matters,
+		"studies":       formations,
+		"infos":         infos,
+	})
+
 }

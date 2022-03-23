@@ -50,7 +50,7 @@ func main() {
 	// all
 	// actually DELETE but html forms makes me sad
 	router.GET("/board/disconnect", disconnect)
-	router.GET("/board", func(c *gin.Context) {
+	router.GET("/board/", func(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/board/exercices")
 	})
 	router.GET("/board/exercices", getExos)
@@ -70,7 +70,7 @@ func main() {
 	router.POST("/delete-account/view", deleteAccount)
 
 	// export data
-	router.GET("/board/params/export-data")
+	router.GET("/board/params/export-data", exportData)
 
 	// must be PUT but html is boring
 	router.POST("/board/params", recordParams)

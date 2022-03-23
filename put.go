@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -76,7 +75,7 @@ func recordParams(c *gin.Context) {
 	// TODO: rename file, insert correct path in db
 	file, err := c.FormFile("pic")
 	if err != nil {
-		fmt.Println(err)
+		printErr("get pic formfile", "recordParams", err)
 	} else {
 		if len(file.Filename) > 0 {
 			ext = after(file.Filename, ".")
@@ -86,7 +85,7 @@ func recordParams(c *gin.Context) {
 			err = c.SaveUploadedFile(file, pic)
 
 			if err != nil {
-				fmt.Println(err)
+				printErr("save pic formfile", "recordParams", err)
 			}
 		}
 	}
