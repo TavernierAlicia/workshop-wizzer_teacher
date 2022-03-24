@@ -343,9 +343,12 @@ func getStudentHisto(c *gin.Context) {
 		return
 	}
 
+	exolen := len(studentScore.DaysDetails)
+	tablen := len(studentScore.ScoreByLang)
+
 	// return html
 	c.HTML(200, "student.html", map[string]interface{}{
-		"infos": infos, "student": student, "score": score, "studentScoring": studentScore,
+		"exolength": exolen, "tablength": tablen, "infos": infos, "student": student, "score": score, "studentScoring": studentScore,
 	})
 }
 
@@ -401,9 +404,6 @@ func getOverview(c *gin.Context) {
 	})
 }
 
-// TODO: get data import to csv
-
-// TODO: ask delete account sendmail
 func askDeleteAccount(c *gin.Context) {
 
 	data := GetSessionData(sessions.Default(c))

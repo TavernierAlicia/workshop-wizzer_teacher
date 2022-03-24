@@ -200,6 +200,18 @@ func getBotToken(id int64) (botToken string, err error) {
 	return botToken, err
 }
 
+func checkBotToken(token string) (id int64, err error) {
+	db := dbConnect()
+	err = db.QueryRow("SELECT user_id FROM botToken WHERE token = ?", token).Scan(&id)
+
+	if err != nil {
+		printErr("get user from token", "checkToken", err)
+		return 0, err
+	}
+
+	return id, err
+}
+
 func insertToken(token string, mail string) (err error) {
 	db := dbConnect()
 
@@ -279,7 +291,29 @@ func getExercices(id int64, aType string, studies_id string, campus_id string, m
 		}
 
 		// now get exercices
-		err = db.Select(&exos, "SELECT exercices.level_id AS level, exercices.id, exercices.name AS name, CONCAT(?, exercices.git_path) AS git_path, DATE(exercices.due_at) AS due_at, exercices.description, matters.name AS matter, 0 AS score, IFNULL(subjects.name, '') AS subject, exercices.bareme, CONCAT(users.name, ' ', users.surname) AS creator, exercices.created FROM exercices LEFT JOIN matters ON exercices.matter_id = matters.id LEFT JOIN subjects ON subjects.id = exercices.subject_id LEFT JOIN users on users.id = exercices.user_id WHERE CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? AND exercices.matter_id = ? AND level_id = ?", repo, campus_id, matter_id, level_id)
+		err = db.Select(&exos, `
+			SELECT 
+				exercices.level_id AS level, 
+				exercices.id, 
+				exercices.name AS name, 
+				CONCAT(?, exercices.git_path) AS git_path, 
+				DATE(exercices.due_at) AS due_at, 
+				exercices.description, 
+				matters.name AS matter, 
+				0 AS score, 
+				IFNULL(subjects.name, '') AS subject, 
+				exercices.bareme, 
+				CONCAT(users.name, ' ', users.surname) AS creator, 
+				exercices.created 
+			FROM exercices 
+				JOIN matters ON exercices.matter_id = matters.id 
+				JOIN subjects ON subjects.id = exercices.subject_id 
+				JOIN users on users.id = exercices.user_id 
+			WHERE 
+				CAST(exercices.due_at AS DATE) = CAST(NOW() AS DATE) AND users.campus_id = ? 
+				AND exercices.matter_id = ? 
+				AND level_id = ?`,
+			repo, campus_id, matter_id, level_id)
 	} else {
 
 		err = db.Select(&exos, `
@@ -320,7 +354,9 @@ func updateParams(id int64, pic string, repo string, campus string, studies stri
 		printErr("get old pic", "updateParams", err)
 	}
 
-	deleteOldPic(deletePic)
+	if pic != deletePic && deletePic != viper.GetString("default.default_pic") {
+		deleteOldPic(deletePic)
+	}
 
 	if repo != "" {
 		_, err = db.Exec("UPDATE users SET pic = ?, repo = ?, campus_id = (SELECT id FROM schools WHERE name = ?), studies_id = (SELECT id FROM studies WHERE name = ?) WHERE id = ?", pic, repo, campus, studies, id)
@@ -511,7 +547,8 @@ func getStudentScoring(student_id string) (studentScoring Student, err error) {
 	SELECT 
 		subjects.name AS lang,
 		IFNULL(SUM(IF(users.id = ?, rendus.score, 0)), 0) AS score_by_lang,
-		IFNULL(Cast(AVG(rendus.score) AS Int), 0) AS moy_score
+		IFNULL(Cast(AVG(rendus.score) AS Int), 0) AS moy_boot,
+		IFNULL(Cast(AVG(IF(users.id = ?, rendus.score, NULL)) AS Int), 0) AS moy_student
 	FROM rendus
 		JOIN exercices ON exercices.id = rendus.exercice_id
 		JOIN subjects ON exercices.subject_id = subjects.id
@@ -521,7 +558,12 @@ func getStudentScoring(student_id string) (studentScoring Student, err error) {
 		JOIN levels ON studies.level_id = levels.id
 		WHERE users.campus_id = ? AND (matters.id = ? OR (SELECT studies.matter_id FROM studies WHERE studies.id = ?) = matters.id) AND levels.id = ?
 		GROUP BY subjects.id;
-	`, student_id, campus_id, matter_id, studies_id, level_id)
+	`, student_id, student_id, campus_id, matter_id, studies_id, level_id)
+
+	if err != nil {
+		printErr("get student scoring by lang", "getStudentScoring", err)
+		return studentScoring, err
+	}
 
 	// get sample days data
 	err = db.Select(&studentScoring.DaysDetails, `
@@ -582,7 +624,7 @@ func getAllStudentScoring(campus_id int64, matter_id int64, params OverviewSearc
 	err = db.Select(&studentScoring.ScoreByLang, `
 	SELECT
 		subjects.name AS lang,
-		IFNULL(Cast(AVG(IF(studies.id IS NULL,0, rendus.score)) AS Int),0) AS moy_score
+		IFNULL(Cast(AVG(IF(studies.id IS NULL, NULL, rendus.score)) AS Int),0) AS moy_score
 	FROM exercices
 		JOIN subjects ON exercices.subject_id = subjects.id
 		JOIN users AS u1 ON exercices.user_id = u1.id
@@ -670,20 +712,40 @@ func getAllStudentScoring(campus_id int64, matter_id int64, params OverviewSearc
 func deleteAllUserData(id int64) (err error) {
 	db := dbConnect()
 
-	_, err = db.Exec("DELETE FROM users WHERE id = ?", id)
+	// delete pic too
+	pic := ""
+	err = db.QueryRow("SELECT pic FROM users WHERE id = ?", id).Scan(&pic)
 	if err != nil {
-		printErr("erase users table", "deleteAllUserData", err)
+		printErr("get pic", "deleteAllUserData", err)
 		return err
 	}
-	_, err = db.Exec("DELETE FROM exercices WHERE user_id = ?", id)
+
+	if pic != viper.GetString("default.default_pic") {
+		deleteOldPic(pic)
+	}
+
+	// Delete things from less to more important
+	_, err = db.Exec("DELETE FROM botToken WHERE user_id = ?", id)
 	if err != nil {
-		printErr("erase exercices table", "deleteAllUserData", err)
+		printErr("erase bot token", "deleteAllUserData", err)
 		return err
 	}
 
 	_, err = db.Exec("DELETE FROM rendus WHERE student_id = ?", id)
 	if err != nil {
 		printErr("erase rendus table", "deleteAllUserData", err)
+		return err
+	}
+
+	_, err = db.Exec("DELETE FROM exercices WHERE user_id = ?", id)
+	if err != nil {
+		printErr("erase exercices table", "deleteAllUserData", err)
+		return err
+	}
+
+	_, err = db.Exec("DELETE FROM users WHERE id = ?", id)
+	if err != nil {
+		printErr("erase users table", "deleteAllUserData", err)
 		return err
 	}
 

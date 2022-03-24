@@ -105,7 +105,8 @@ type Student struct {
 type ScoreLang struct {
 	Lang  string `db:"lang"`
 	Score int64  `db:"score_by_lang"`
-	Moy   int64  `db:"moy_score"`
+	MoyS  int64  `db:"moy_student"`
+	MoyB  int64  `db:"moy_boot"`
 }
 
 type Days struct {

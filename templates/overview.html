@@ -116,7 +116,7 @@
       location.href = url;
     }
 
-    window.onload = _ => {
+    window.addEventListener("load", _ => {
       let params = new URLSearchParams(location.search);
       if (params.has("exo-level")) {
         let level = params.get("exo-level");
@@ -136,6 +136,6 @@
           }
         }
       }
-    }
+    });
   </script>
 </body>

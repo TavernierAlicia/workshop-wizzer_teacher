@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -31,7 +32,10 @@ func recordParams(c *gin.Context) {
 		return
 	}
 
-	bt, _ := getBotToken(id)
+	bt := ""
+	if infos.Type == "prof" {
+		bt, _ = getBotToken(id)
+	}
 
 	result, _ := c.MultipartForm()
 
@@ -110,8 +114,11 @@ func recordParams(c *gin.Context) {
 
 	// now update in db
 	if pic == "" {
-		pic = viper.GetString("default.default_pic")
+		pic = fmt.Sprintf("%v", sessions.Default(c).Get("pic"))
+	} else if pic == "rm" {
+		viper.GetString("default.default_pic")
 	}
+
 	err = updateParams(infos.Id, pic, repo, campus, studies, matter)
 
 	if err != nil {
@@ -120,6 +127,12 @@ func recordParams(c *gin.Context) {
 	}
 
 	infos, _ = getUserInfos(data.Token)
+	sessions.Default(c).Set("campus_id", infos.CampusID)
+	if infos.Type == "student" {
+		sessions.Default(c).Set("studies_id", infos.StudiesID)
+	} else {
+		sessions.Default(c).Set("matter_id", infos.MatterID)
+	}
 	sessions.Default(c).Set("pic", infos.Pic)
 	sessions.Default(c).Save()
 

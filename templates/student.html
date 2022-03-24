@@ -47,12 +47,18 @@
           <td>Points de {{ .studentScoring.Surname }}</td>
           <td>Moyenne du Bootcamp</td>
         </tr>
-        {{ range .studentScoring.ScoreByLang }}
-          <tr>
-            <td>{{ .Lang }}</td>
-            <td>{{ .Score }}</td>
-            <td>{{ .Moy }}</td>
-          </tr>
+
+        {{ if ne .tablength 0 }}
+          {{ range .studentScoring.ScoreByLang }}
+            <tr>
+              <td>{{ .Lang }}</td>
+              <td>{{ .Score }}</td>
+              <td>{{ .MoyS }}</td>
+              <td>{{ .MoyB }}</td>
+            </tr>
+          {{ end }}
+        {{ else }}
+        <tr><td>Pas de résultats pour le moment</td></tr>
         {{ end }}
 
 
@@ -62,30 +68,34 @@
     <h2>Detail des exercices</h2>
     <table>
       <tbody>
-        {{ range .studentScoring.DaysDetails }}
-          <tr>
-            <td>{{ .Date }} - </td>
-            <td>{{ .Score }}pts</td>
-          </tr>
-          <tr>
-            <td>Nom</td>
-            <td>Repo Github</td>
-            {{ if eq .infos.Matter "Développement" }}
-              <td>Language</td>
-            {{ else }}
-              <td>Sujet</td>
-            {{ end }}
-            <td>Score</td>
-          </tr>
-          {{ range .Exos }}
+        {{ if ne .exolength 0 }}
+          {{ range .studentScoring.DaysDetails }}
             <tr>
-              <td>{{ .Name }}</td>
-              <td>{{ .Repo }}</td>
-              <td>{{ .Lang }}</td>
-              <td>{{ .Score }}/{{ .Total }}</td>
+              <td>{{ .Date }} - </td>
+              <td>{{ .Score }}pts</td>
             </tr>
-          {{ end }}
+            <tr>
+              <td>Nom</td>
+              <td>Repo Github</td>
+              {{ if eq $.infos.Matter "Développement" }}
+                <td>Language</td>
+              {{ else }}
+                <td>Sujet</td>
+              {{ end }}
+              <td>Score</td>
+            </tr>
+            {{ range .Exos }}
+              <tr>
+                <td>{{ .Name }}</td>
+                <td>{{ .Repo }}</td>
+                <td>{{ .Lang }}</td>
+                <td>{{ .Score }}/{{ .Total }}</td>
+              </tr>
+            {{ end }}
 
+          {{ end }}
+        {{ else }}
+          <tr><td>Aucun exercice n'a été rendu à ce jour</td></tr>
         {{ end }}
       </tbody>
     </table>

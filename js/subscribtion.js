@@ -15,7 +15,7 @@ const showInfos = (infos) => {
   showGit();
 }
 
-window.onload = function() {
+window.addEventListener("load", _ => {
   getInfos();
   
   // verify passwords
@@ -27,7 +27,7 @@ window.onload = function() {
   document.getElementById('pwd-confirm').oninput = function() {
     comparePWD(document.getElementById('pwd').value, document.getElementById('pwd-confirm').value)
   };
-}
+});
 
 
 

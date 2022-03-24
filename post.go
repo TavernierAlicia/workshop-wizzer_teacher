@@ -293,7 +293,7 @@ func recordGrade(c *gin.Context) {
 
 	token := c.Request.Header.Get("Authorization")
 
-	_, err := checkToken(token)
+	_, err := checkBotToken(token)
 	if err != nil {
 		c.JSON(401, nil)
 		return
