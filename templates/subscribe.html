@@ -1,136 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> WIZZER TEACHER </title>
-    <link rel = "stylesheet" href="css/main.css">
-
+    <link rel="stylesheet" href="/../css/INS.css">
+    <link rel="stylesheet" href="/../css/alertsubscribe.css">
 
 </head>
 
 <body>
 
     <div class="header">
-        <img src="image/Logo.svg" alt="Profil Etudiant">
-    </div>  
-    
-    <form name="subscribe" method="POST">
+        <a class="header-image" href="http://localhost:9999/">
+            <img class="logo" src="/../pictures/Logo.svg" alt="Profil Etudiant">
+        </a>
+    </div>
 
-        <section class="hero">
-            <div class="container">
-                <div class="Left-col">
-                    <h1> VOUS ÊTES </h1>
+
+    <div class="subscribe-form">
+
+        <form name="subscribe" method="POST">
+
+            <section class="hero">
+                <div class="container">
+                    <div id="main">
+                        <div id="menu">
+                            <h1 class="title"> VOUS ÊTES </h1>
+                            <fieldset>
+                                <div class="PHOTO">
+                                    <img class="PHOTO" src="/../pictures/Etudiant.svg" alt="Profil Etudiant">
+                                    <img class="profphoto" src="/../pictures/Professeur.svg" alt="Profil Professeur">
+                                    <img class="PNG" src="/../pictures/Alumni.svg" alt="Profil Alumni">
+                                </div>
+
+                                <label class="student" for="student">Etudiant</label>
+                                <input class="account" type="radio" name="account" value="student" id="student" checked>
+                                <label class="Prof" for="prof">Professeur</label>
+                                <input class="Profs" type="radio" name="account" value="prof" id="prof">
+                                <label class="Alum" for="alum">Alumni</label>
+                                <input class="Alumn" type="radio" name="account" value="alum" id="alum">
+
+                            </fieldset>
+
+                        </div>
+
+            </section>
+
+
+
+            <section class="hero">
+                <div class="container">
+                    <div class="center-col">
+                        <div id="contenu1">
+
+                            <h1 class="title1"> INFORMATIONS PERSONNELLES </h1>
+                            <div class="forms">
+                                <div><label for="surname"> Nom </label></div>
+                                <div><input id="surname" name="surname" type="text" placeholder="ex: Dupont"></div>
+                                <div><label for="name"> Prénom </label></div>
+                                <div><input id="name" name="name" type="text" placeholder="ex: Alexandra"></div>
+                                <div><label for="mail"> Adresse mail </label></div>
+                                <div><input id="mail" name="mail" type="text" placeholder="ex: alexandradpt@gmail.com">
+                                </div>
+                                <div class="repofield" id="repoField"></div>
+                                <div class="selectSchool" id="selectSchool"></div>
+                                <div class="studiesOrMatter" id="studiesOrMatter"></div>
+                                <div class="chek">
+                                    <input type="checkbox" id="legal" name="legal"
+                                        title="Vous devez accepter les conditions générales d'utilisation avant de pouvoir vous inscrire"
+                                        required>
+                                    <label for="legal">J'accepte les <a class="continue">conditions générales
+                                            d'utilisation</a></label>
+                                </div>
+                            </div>
+                            <div class="btninfo">
+                                <a class="btn" href="http://localhost:9999/"> RETOUR À L'ACCUEIL </a>
+                                <button type="submit">S'INSCRIRE</button>
+                            </div>
+                        </div>
+            </section>
+
+            <div id="contenu2">
+                <h1 class="title2">MOT DE PASSE</h1>
+                <p class="info">Nous vous conseillons de tout cœur de choisir un mot de passe de plus de 8 caractères,
+                    avec au moins une majuscule, une minuscule, un chiffre et un caractère spécial pour plus de
+                    sécurité. </p>
+                <div class="mdp">
+                    <div><label for="pwd">Mot de passe</label></div>
+                    <div><input id="pwd" name="pwd" type="password" placeholder="Mot de passe"></div>
+                    <div><label for="pwd-confirm">Confirmation du mot de passe</label></div>
+                    <div><input id="pwd-confirm" name="pwd-confirm" type="password" placeholder="Mot de passe"></div>
+                    <p id="infos-pwd"></p>
                 </div>
             </div>
+    </div>
+    </div>
 
-            
-            <div>
-                <label for="student">Etudiant</label>
-                <input type="radio" name="account" value="student" id="student" checked>
+    </form>
 
-                <img src="image/Etudiant.svg" alt="Profil Etudiant">
+    <script type="text/javascript" src="/../js/subscribtion.js"></script>
 
-              </div>
-              
-              <div>
-                <label for="prof">Professeur</label>
-                <input type="radio" name="account" value="prof" id="prof">
-
-                <img src="image/Professeur.svg" alt="Profil Professeur">
-
-              </div>
-          
-              <div>
-                  <label for="alum">Alumni</label>
-                  <input type="radio" name="account" value="alum" id="alum">
-
-                  <img src="image/Alumni.svg" alt="Profil Alumni">
-
-              </div>
-
-        </section>
-
-       
-    
-        <section class="hero">
-            <div class="container">
-                <div class="center-col">
-                    <h1> INFORMATIONS PERSONNELLES </h1>
-                </div>
-            </div>
-
-            <div>
-                <label for="surname"> Nom </label>
-                <input title="Ne sont authorisées que les lettres, les espaces et les tirets et le nombre de caractères maximum est de 250" pattern="[A-zÀ-ȕ\s\-]{1,250}" required maxlength="250" id="surname" name="surname" type="text" placeholder="ex: Dupont">
-            </div>
-    
-    
-            <div>
-              <label for="name"> Prénom </label>
-              <input title="Ne sont authorisées que les lettres, les espaces et les tirets et le nombre de caractères maximum est de 250" pattern="[A-zÀ-ȕ\s\-]{1,250}" required maxlength="250" id="name" name="name" type="text" placeholder="ex: Alexandra">
-            </div>
-        
-        
-            <div>
-                <label for="mail"> Adresse mail </label>
-                <input title="Dans ce champ, seules les adresses mail sont authorisées" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required maxlength="250" id="mail"  name="mail" type="email" placeholder="ex: alexandradpt@gmail.com">
-            </div>
-        
-            <div id="repoField"></div>
-        
-            <div id="selectSchool"></div>
-        
-            <div id="studiesOrMatter"></div>
-        </section>
-
-      <section class="hero">
-        <div class="container">
-            <div class="right-col">
-                <h1>MOT DE PASSE</h1>
-                <p id="infos-pwd"></p>
+    {{ if eq .send 1 }}
+    <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);"
+        id="hover"></div>
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;"
+        id="sendform">
+        <div class="champ-oublie">
+            <div class="form-popup" id="popupForm">
+                <form action="/Inscription.html" class="form-container">
+                    {{ if eq .ok 1 }}
+                    <p class="text">Bravo! Vous êtes inscrits sur Wizzer Teacher! Vous pouvez à présent vous connecter
+                    </p>
+                    <a class="btn" href="http://localhost:9999/connect">Par ici!</a>
+                    {{ else }}
+                    <p class="text">Oh non! Quelque chose ne s'est pas passé comme prévu! Vous êtes peut-être déjà
+                        inscrit? Si ce n'est pas le cas, vérifiez les informations entrées dans le formulaire.</p>
+                    <a class="btn" href="http://localhost:9999/subscribe">Réessayer</a>
+                    {{ end }}
+                </form>
             </div>
         </div>
 
-        <div>
-            <label for="pwd">Mot de passe</label>
-            <input title="Les deux mots de passe doivent être identiques" required maxlength="250" id="pwd" name="pwd" type="password" placeholder="Mot de passe">
-          </div>
-      
-          <div>
-            <label for="pwd-confirm">Confirmation du mot de passe</label>
-            <input title="Les deux mots de passe doivent être identiques" required maxlength="250" id="pwd-confirm" name="pwd-confirm" type="password" placeholder="Mot de passe">
-          </div> 
-    </section>
-    <section>
-        <input type="checkbox" id="legal" name="legal" title="Vous devez accepter les conditions générales d'utilisation avant de pouvoir vous inscrire" required>
-        <label for="legal">J'accepte les <a>conditions générales d'utilisation</a></label>
-    </section>
-
-    <script type="text/javascript" src="../js/subscribtion.js"></script>
-         
-    <div class="footer">
-        <h1> © Wizzer Teacher by My Digital School </h1>
-        <a href="http://localhost:9999/"> RETOUR À L'ACCUEIL </a>
-        <button type="submit">S'INSCRIRE</button>
-    </div> 
-        
-    </form>
-
-      {{ if  eq .send 1 }}
-        <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div>
-      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform">
-          {{ if eq .ok 1 }}
-              <p>Bravo! Vous êtes inscrits sur Wizzer Teacher! Vous pouvez à présent vous connecter</p>
-              <a href="http://localhost:9999/connect">Par ici!</a>
-          {{ else }}
-              <p>Oh non! Quelque chose ne s'est pas passé comme prévu! Vous êtes peut-être déjà inscrit? Si ce n'est pas le cas, vérifiez les informations entrées dans le formulaire.</p>
-              <a href="http://localhost:9999/subscribe">Réessayer</a>
-          {{ end }}
-      </div>
+    </div>
 
     {{ end }}
-      
+
 </body>
+
+<footer class="footer">
+    <p> © Wizzer Teacher by My Digital School </p>
+</footer>
+
 </html>

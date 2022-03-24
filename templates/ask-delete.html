@@ -1,63 +1,88 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> parametres </title>
-    <link rel = "stylesheet" href="../css/parameters.css">
 
-  </head>
+<head>
 
-
-  <body class="body">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> Mot de passe oublié </title>
+  <link rel="stylesheet" href="/../css/MDP.css">
+  <link rel="stylesheet" href="/../css/erreurconnexion.css">
 
 
+</head>
 
-    <section>
 
-      <div>
-        <form method="post">
-          <h1>Supression du compte</h1>
-          <p>Voulez-vous vraiment supprimer votre compte?</p>
-          <p>(Si vous ne les avez pas importées, vos données seront perdues à jamais. Pour les importer, rendez-vous das vos paramètres avant qu'il ne soit trop tard!)</p>
-          <label for="pwd">Pour confirmer la supression de compte, veuillez rentrer votre mot de passe</label>
-          <input type="password" name="pwd" id="pwd">
+<body class="body">
+  <div class="header">
+    <a class="header-image" href="http://localhost:9999/">
+      <img class="logo" src="/../pictures/Logo.svg" alt="Profil Etudiant">
+    </a>
+  </div>
+
+
+  <div class="password-form">
+    <form name="MDPoublie" method="POST">
+
+      <section class="hero">
+        <div class="container">
+          <div class="form-text">
+            <p class="form-title">Suppression du compte</p>
+            <p class="form-sub-title">Cette action est irréversible !</p>
+            <p class="form-message">Entrez votre mot de passe pour confirmer la suppression de votre compte, les données
+              seront conservées pendant 1 an avant d’être automatiquement détruites.</p>
+          </div>
+        </div>
+
+        <div class="password-input">
+          <div><label for="pwd">Mot de passe</label></div>
+          <div><input id="pwd" type="password" name="pwd" required placeholder="Mot de passe"></div>
           <input hidden value="{{ .id }}" name="id" id="id">
           <input hidden value="{{ .t }}" name="token" id="token">
+        </div>
 
-          <a href="/connect">Annuler</a>
-          <button type="submit">Supprimer</button>
-        </form>
-      </div>
+        <div class="submit-btn"><button type="submit">Supprimer</button></div>
 
-
-
-      {{ if eq .send 1 }}
-      <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div>
-      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform">
-          
-        {{ if eq .ok 1}}
-          <p class="att"> Compte supprimé !</p>
-          <p class="info">Nous vous souhaitons une bonne continuation </p>
-          <a href="/index">OK</a>
-        {{ else }}
-          <p class="att"> ATTENTION !</p>
-          <p class="info">Une erreur s'est produite, votre compte n'a pas pu être supprimé, veuillez réessayer.</p>
-          <button type="button" class="btnok" onclick="closeForm()">OK</button>
+        {{ if eq .send 1 }}
+        <div
+          style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);"
+          id="hover"></div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;"
+          id="sendform">
+          <div class="identify">
+            <div class="form-pop" id="formpop">
+              <div class="form-identifiant">
+                {{ if eq .ok 1}}
+                <p class="att"> Compte supprimé !</p>
+                <p class="info">Nous vous souhaitons une bonne continuation </p>
+                <a href="/index">OK</a>
+                {{ else }}
+                <p class="att"> ATTENTION !</p>
+                <p class="info">Une erreur s'est produite, votre compte n'a pas pu être supprimé, veuillez réessayer.
+                </p>
+                <button type="button" class="btnok" onclick="closeForm()">OK</button>
+                {{ end }}
+              </div>
+            </div>
+          </div>
+        </div>
         {{ end }}
-      </div>
-      {{ end }}
-     
 
 
-    </section>
+      </section>
 
-    <script>
-      function closeForm() {
-        document.getElementById('hover').remove()
-        document.getElementById('sendform').remove()
-      } 
-    </script>
-  </body>
+      <script>
+        function closeForm() {
+          document.getElementById('hover').remove()
+          document.getElementById('sendform').remove()
+        } 
+      </script>
+    </form>
+  </div>
+</body>
+
+<footer class="footer">
+  <p> © Wizzer Teacher by My Digital School </p>
+</footer>
 
 </html>

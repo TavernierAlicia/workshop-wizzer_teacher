@@ -1,0 +1,146 @@
+.identify {
+    position: relative;
+    font-family: sans-serif;
+    padding-left: 50px;
+    padding-right: 50px;
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+.form-identifiant{
+    max-width: 500px;
+    padding-bottom: 40px;
+    padding-right: 20px;
+    padding-left: 20px;
+    padding-top: 20px;
+}
+
+.att{
+    color: #5373C6;
+    position: relative;
+    margin-bottom: 1.7em;
+    font-size: 1.4em;
+    font-weight: 600;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    font: sans-serif;
+}
+
+.parametre-input{
+	width: max-content;
+	margin-left: auto;
+    margin-right: auto;
+    padding-top: 45px;
+}
+
+.parametre-input label{
+    text-align: left;
+    color: #5373C6;
+    line-height: 0.3em;
+    font-size: 17px;
+    font-weight: 100;
+    padding: 50;
+}
+
+.parametre-input input{
+  padding:3px 12px;
+  border: 0.1px solid #d8d0d0;
+  border: radius 0.5px;
+  width: 296px;
+  font-size: 13px;
+  color:#909090 ;
+  margin-bottom: 10px;
+}
+
+.parametre-input select{
+  padding:3px 12px;
+  border: 0.1px solid #d8d0d0;
+  border: radius 0.5px;
+  font-size: 13px;
+  color:#909090 ;
+  margin-bottom: 10px;
+  width: 322px;
+  padding-right: 10px;
+  background-color: white;
+}
+
+.parametre-input textarea{
+    background: white;
+    border: 0.1px solid #d8d0d0;
+    border: radius 0.5px;
+    font-size: 13px;
+    color:#909090 ;
+    padding:3px 12px;
+    margin-bottom: 10px;
+    width: 326px;
+    padding-right: 10px;
+    width: 295px;
+    height: 79px;
+    resize: none;
+    
+}
+
+.btn-parametre{
+    text-align: center;
+  
+}
+  
+.btn-parametre button {
+    font-size: 16px;
+    font-weight: 100;
+    text-align: center;
+    color: #000000;
+    display: inline-block;
+    padding: 10px 29px;
+    background-color: #FFFFFF;
+    border: 1px double #153F85;
+    border-radius: 1px;
+    margin-top: 80px;
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+    -o-transition: all 0.5s;
+    transition: all 0.5s;
+    cursor: pointer;
+    vertical-align:middle;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 50px;
+}
+  
+.btn-parametre :hover{
+    background-color: rgb(229, 229, 243);
+}
+
+
+
+.btn-parametre a {
+    font-size: 16px;
+    font-weight: 100;
+    text-align: center;
+    color: #000000;
+    display: inline-block;
+    padding: 10px 29px;
+    background-color: #FFFFFF;
+    border: 1px double #153F85;
+    border-radius: 1px;
+    margin-top: 80px;
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+    -o-transition: all 0.5s;
+    transition: all 0.5s;
+    cursor: pointer;
+    vertical-align:middle;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.btn-parametre :hover{
+    background-color: rgb(229, 229, 243);
+}
+
+.btn{
+    text-decoration: none;
+}
+
+  

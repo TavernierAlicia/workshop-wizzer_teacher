@@ -1,391 +1,501 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Board </title>
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="stylesheet" href="/css/general.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Board </title>
+    <link rel = "stylesheet" href="/../css/etudiantclassement.css">
+    <link rel = "stylesheet" href="/../css/alertetupro.css">
+    <link rel = "stylesheet" href="/../css/ajoutexo.css">
+    <link rel = "stylesheet" href="/../css/modificationexo.css">
+    <link rel="stylesheet" href="/../css/general.css">
 </head>
 
-<body>
 
-  <!-- Utilisateur -->
-  <section>
-    <img src="../{{ .infos.Pic }}">
-    <p>{{ .infos.Name}}</p>
-    <p>{{ .infos.Surname }}</p>
-    {{ if eq .student 1 }}
-      <p>score: {{ .score }}</p>
-    {{ end }}
-    <a href="http://localhost:9999/board/params">Paramètres</button>
-    <a href="http://localhost:9999/board/disconnect">Déconnexion</a>
+<body class="body">
+    <div class="header">
+        <div id="main">
+            <div id="menu">
+                <fieldset class="field">
+                    <div id="col">
+                        <img class="para-img" src="/../{{ .infos.Pic }}">
+                        <p class="etudiant-name">{{.infos.Name}}</p>
+                        <p class="etudiant-firstname">{{.infos.Surname }}</p>
+                        {{ if eq .student 1 }}
+                        <p class="score">Score: {{ .score }}</p>
+                        {{ end }}
+                        <div class="icon-para">
+                            <a href="/board/params"><img class="icon" src="/../pictures/icon.svg" alt="icon"></a>
+                        </div>
+                    </div>
+                </fieldset>
 
-  </section>
 
-  <!-- Menus -->
-  <section>
-    {{ if eq .student 1 }}
-      <a href="http://localhost:9999/board"> Exercices du jour</a>
-      <a href="/board/student?id={{ .infos.Id}}">Historique</a>
-      <a href="http://localhost:9999/board/rank">Classement</a>
-    {{ else }}
-      <a href="http://localhost:9999/board">Exercices</a>
-      <a href="http://localhost:9999/board/rank">Etudiants</a>
-      <a href="http://localhost:9999/board/overview">Statistiques</a>
-    {{ end }}
-  </section>
+                <fieldset class="menu-style">
+                    {{ if eq .student 1 }}
+                    <div class="title">
+                        <a class="titre" href="http://localhost:9999/board"> Exercices du jour</a>
+                    </div>
+                    <div class="detail">
+                        <a href="/board/student?id={{ .infos.Id}}">Historique</a>
+                        <a href="http://localhost:9999/board/rank">Classement</a>
+                    </div>
+                    {{ else }}
+                    <div class="title">
+                        <a class="titre" href="http://localhost:9999/board">Exercices</a>
+                    </div>
+                    <div class="detail">
+                        <a href="http://localhost:9999/board/rank">Etudiants</a>
+                        <a href="http://localhost:9999/board/overview">Statistiques</a>
+                    </div>
+                    {{ end }}
+                    <footer class="footer">
+                        <p> © Wizzer Teacher by My Digital School </p>
+                    </footer>
 
-  <!-- Contenu -->
+                </fieldset>
 
-  <section>
-    <h1>EXERCICES</h1>
-    <!-- Student -->
-    {{ if eq .student 1 }}
-      <h2>Liste exos du jour</h2>
-      <table>
-        <tbody>
-          <tr>
-            <td>Nom</td>
-            <td>Date</td>
-            <td>Repo</td>
-            {{ if eq .infos.Matter "Développement" }}
-              <td>Language</td>
-            {{ else }}
-              <td>Sujet</td>
-            {{ end }}
-            <td>Bareme</td>
-          </tr>
-          {{ range .exos }}
-            <tr class="exo" onclick="this.classList.toggle('showdesc');">
-              <td><div class="arrow down"></div>{{ .Name }}</td>
-              <td>{{ .Due }}</td>
-              <!-- TODO INTEGRATE -->
-              <td class="repo" id="repo">{{ .GitPath }}</td>
-              <td>{{ .Subject }}</td>
-              <td>/{{ .Bareme }}</td>
-            </tr>
-            <tr class="desc"><td>{{ .Description }}</td></tr>
-          {{ end }}
-
-          {{ if eq .size 0 }}
-            <tr><td>Pas d'exercices prévus pour aujourd'hui</td></tr>
-          {{ end }}
-        </tbody>
-      </table>
-
-      <!-- Prof -->
-    {{ else }}
-      {{ if eq .student 0 }}
-        <a href="http://localhost:9999/board/exercices/add">Ajouter un exo</a>
-      {{ end }}
-
-      <h2>Liste exos total avec recherche et modification</h2>
-      <form>
-        <h2>Rehercher: </h2>
-        <label for="date">par date: </label>
-        <input type="date" id="date" name="date" value="" min="{{ .first }}" max="{{ .last }}">
-
-        <label for="exo-name">par nom: </label>
-        <input type="text" id="exo-name" name="exo-name" placeholder="ex: Exercice 1.1">
-
-        <div id="level">
-          <label for="exo-level">par niveau:</label>
-          <select name="exo-level" id="exo-level">
-            <option value="">-- Tous --</option>
-
-            {{ range .levelsList }}
-              <option value="{{ . }}">{{ . }}</option>
-            {{ end }}
-                
-          </select>
-        </div>
-        
-        <div id="languages">
-          {{ if eq .infos.Matter "Développement" }}
-            <label for="exo-language">par language:</label>
-          {{ else }}
-            <label for="exo-language">par sujet:</label>
-          {{ end }}
-          <select name="exo-language" id="exo-language">
-            <option value="">-- Tous --</option>
-            {{ range .subjectsList }}
-              <option value="{{ . }}">{{ . }}</option>
-            {{ end }}
-          </select>
-      
-
+            </div>
         </div>
 
-        <button type="submit">Chercher</button>
-      </form>
+        <div id="entete">
+            <a class="header-image" href="http://localhost:9999/">
+                <img class="logo" src="/../pictures/Logo.svg" alt="Profil Etudiant"></a>
+            <a class="deconnexion-etu" href="http://localhost:9999/board/disconnect" target="top">DECONNEXION</a>
 
-      <table>
-        <tbody>
-          <tr>
-            <td>Nom</td>
-            <td>Date</td>
-            <td>Repo</td>
-            {{ if eq .infos.Matter "Développement" }}
-              <td>Language</td>
-            {{ else }}
-              <td>Sujet</td>
-            {{ end }}
-            <td>Niveau</td>
-            <td>Bareme</td>
-            {{ if eq .student 0}}
-              <td>Actions</td>
-            {{ end }}
-          </tr>
-          {{ range .exos }}
-            <tr class="exo" onclick="this.classList.toggle('showdesc');">
-              <td><div class="arrow down"></div>{{ .Name }}</td>
-              <td>{{ .Due }}</td>
-              <td>{{ .GitPath }}</td>
-              <td>{{ .Subject }}</td>
-              <td>{{ .Level }}</td>
-              <td>/{{ .Bareme }}</td>
-              {{ if eq $.student 0 }}
-              {{ $crea := printf "%s %s" $.infos.Name $.infos.Surname }}
-                {{ if eq .Creator $crea }}
-                  <td><a href="http://localhost:9999/board/exercices/edit?&exo-id={{ .Id }}" class="edit">Modifier</a> <a href="http://localhost:9999/board/exercices/del?&exo-id={{ .Id }}" class="delete">Suprimer</a></td>
-                {{ end }}
-              {{ end }}
-            </tr>
-              <tr class="desc"><td>{{ .Description }}</td></tr>
-          {{ end }}
-
-        {{ if eq .size 0 }}
-        <tr><td>Aucun exercice trouvé</td></tr>
-        {{ end }}
-        </tbody>
-      </table>
-    {{ end }}
-  </section>
+        </div>
+    </div>
 
 
+    <div class="etuexo-form">
+        <form name="etudiantexo" method="POST">
+            <section class="hero">
+                <div id="contenu">
+                    <!-- Student -->
+                    {{ if eq .student 1 }}
+                    <h1 class="titre-table">EXERCICES DU JOUR</h1>
+                    <table>
+                        <tbody>
+                            <tr class="name">
+                                <th>Nom</th>
+                            </tr>
+                            <tr class="date">
+                                <th>Date</th>
+                            </tr>
+                            <tr class="rg">
+                                <th>Rendu Github</th>
+                            </tr>
+                            {{ if eq .infos.Matter "Développement" }}
+                            <tr class="langue">
+                                <th>Language</th>
+                            </tr>
+                            {{ else }}
+                            <tr class="langue">
+                                <th>Sujet</th>
+                            </tr>
+                            {{ end }}
+                            <tr class="bareme">
+                                <th>Barème</th>
+                            </tr>
+                            {{ range .exos }}
+                            <tr class="exo" onclick="this.classList.toggle('showdesc');">
+                                <td class="ad">
+                                    <div class="arrow down"></div>{{ .Name }}
+                                </td>
+                                <td class="due">{{ .Due }}</td>
+                                <td class="repo" id="repo">{{ .GitPath }}</td>
+                                <td class="Langue">{{ .Subject }}</td>
+                                <td class="Bareme">/{{ .Bareme }}</td>
+                            </tr>
+                            <tr class="desc">
+                                <td>{{ .Description }}</td>
+                            </tr>
+                            {{ end }}
+                            {{ if eq .size 0 }}
+                            <tr class="exo">
+                                <td class="desc">Pas d'exercices prévus pour aujourd'hui</td>
+                            </tr>
+                            {{ end }}
+                        </tbody>
+                    </table>
+
+                    <!-- Prof -->
+                    {{ else }}
+                    {{ if eq .student 0 }}
+                    <h1 class="titre-table1">EXERCICES</h1>
+                    <div class="retour">
+                        <a class="rta" href="http://localhost:9999/board/exercices/add">Ajouter</a>
+                    </div>
+                    {{ end }}
+
+                    <h2 class="titre-table2">Liste exos total avec recherche et modification</h2>
+                    <form>
+                        <h2 class="filtre">Filtre</h2>
+
+                        <div class="champfiltre">
+                            <label for="date">Date </label>
+                            <input type="date" id="date" name="date" value="" min="{{ .first }}" max="{{ .last }}">
+                            <label for="exo-name">Nom </label>
+                            <input type="text" id="exo-name" name="exo-name" placeholder="ex: Exercice 1.1">
+                            <div class="level">
+                                <label for="exo-level">Niveau</label>
+                                <select name="exo-level" id="exo-level">
+                                    <option value="">-- Tous --</option>
+                                    {{ range .levelsList }}
+                                    <option value="{{ . }}">{{ . }}</option>
+                                    {{ end }}
+                                </select>
+                                <button class="chercher" type="submit">Chercher</button>
+                            </div>
+
+                            <div class="language">
+                                {{ if eq .infos.Matter "Développement" }}
+                                <label for="exo-language">Language</label>
+                                {{ else }}
+                                <label for="exo-language">Sujet</label>
+                                {{ end }}
+                                <select name="exo-language" id="exo-language">
+                                    <option value="">-- Tous --</option>
+                                    {{ range .subjectsList }}
+                                    <option value="{{ . }}">{{ . }}</option>
+                                    {{ end }}
+                                </select>
+                            </div>
+                    </form>
+
+                    <table>
+                        <tbody>
+                            <tr class="name">
+                                <th>Nom</th>
+                            </tr>
+                            <tr class="date">
+                                <th>Date</th>
+                            </tr>
+                            <tr class="rg">
+                                <th>Rendu Github</th>
+                            </tr>
+                            <tr class="langue1">
+                                {{ if eq .infos.Matter "Développement" }}
+                                <th>Language</th>
+                                {{ else }}
+                                <th>Sujet</th>
+                                {{ end }}
+                            </tr>
+                            <tr class="niveau">
+                                <th>Niveau</th>
+                            </tr>
+                            <tr class="bareme1">
+                                <th>Barème</th>
+                            </tr>
+                            {{ if eq .student 0}}
+                            <tr class="action">
+                                <th>Actions</th>
+                            </tr>
+                            {{ end }}
+                            {{ range .exos }}
+                            <tr class="exo" onclick="this.classList.toggle('showdesc');">
+                                <td class="ad">
+                                    <div class="arrow down"></div>{{ .Name }}
+                                </td>
+                                <td class="due">{{ .Due }}</td>
+                                <td class="repo-prof" id="repo">{{ .GitPath }}</td>
+                                <td class="Langue1">{{ .Subject }}</td>
+                                <td class="Niveau">{{ .Level }}</td>
+                                <td class="Bareme1">/{{ .Bareme }}</td>
+                                {{ if eq $.student 0 }}
+                                {{ $crea := printf "%s %s" $.infos.Name $.infos.Surname }}
+                                {{ if eq .Creator $crea }}
+                                <td class="btn-action"><a class="btn-modifier"
+                                        href="http://localhost:9999/board/exercices/edit?&exo-id={{ .Id }}"
+                                        class="edit">Modifier</a> <a class="btn-supprimer"
+                                        href="http://localhost:9999/board/exercices/del?&exo-id={{ .Id }}"
+                                        class="delete">Suprimer</a></td>
+                                {{ end }}
+                                {{ end }}
+                            </tr>
+                            <tr class="desc">
+                                <td>{{ .Description }}</td>
+                            </tr>
+                            {{ end }}
+
+                            {{ if eq .size 0 }}
+                            <tr class="exo">
+                                <td class="desc">Aucun exercice trouvé</td>
+                            </tr>
+                            {{ end }}
+                        </tbody>
+                    </table>
+                    {{ end }}
+                </div>
+            </section>
+        </form>
+    </div>
+
+    <!-- <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(168,168,168,.6);" id="hover"></div> -->
+    <!-- <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background-color: white;" id="sendform"> -->
+
+
+    <!-- </div> -->
     <!-- ALERT MESSAGES -->
     {{ if eq .is_delete 1 }}
     <div id="hover"></div>
     <div id="sendform">
-      {{ if eq .is_send 1 }}
-        <!-- display errors -->
-        {{ if eq .is_success 1 }}
-        <p>Exercice supprimé</p>
-        <a href="/board/exercices">OK</a>
+        {{ if eq .is_send 1 }}
+        <div class="champ-oublie">
+            <div class="form-popup" id="popupForm">
+
+                <!-- display errors -->
+                {{ if eq .is_success 1 }}
+                <p class="text">Exercice supprimé</p>
+                <a class="btn" href="/board/exercices">OK</a>
+                {{ else }}
+                <p class="text">Une erreur s'est produite</p>
+                <a class="btn" href="/board/exercices">OK</a>
+                {{ end }}
+
+            </div>
+        </div>
         {{ else }}
-        <p>Une erreur s'est produite</p>
-        <a href="/board/exercices">OK</a>
+        <div class="champ-oublie">
+            <div class="form-popup" id="popupForm">
+
+                <!-- display confirm window -->
+                <p class="text">Supprimer l'exercice {{ $.exo_details.Name }}? </p>
+                <div class="retour">
+                    <a class="rta" href="/board/exercices">Annuler</a>
+                    <button type="submit">Supprimer</button>
+                </div>
+
+            </div>
+        </div>
         {{ end }}
-      {{ else }}
-        <!-- display confirm window -->
-        <form method="post">
-          <p>Supprimer l'exercice {{ $.exo_details.Name }}? </p>
-          <a href="/board/exercices">Annuler</a>
-          <button type="submit">Supprimer</button>
-        </form>
-      {{ end }}
-      </div>
+    </div>
     {{ end }}
 
-
     {{ if eq .is_edit 1 }}
-      <div id="hover"></div>
-        <div id="sendform">
-      {{ if eq .is_send 1 }}
+    <div id="hover"></div>
+    <div id="sendform">
+        {{ if eq .is_send 1 }}
         <!-- display errors -->
         {{ if eq .is_success 1 }}
-
-          <p>Exercice modifié</p>
-          <a href="/board/exercices">OK</a>
-        
-        {{ else }}
-          <p>Une erreur s'est produite</p>
-          <a href="/board/exercices">OK</a>
-        {{ end }}
-      {{ else }}
-        <!-- display edit window -->
-        <form method="post">
-          <h1>Modifier un exercice</h1>
-          <label for="desc">Ennoncé</label>
-          <input id="desc" name="desc" type="text" placeholder="Votre énnoncé..." size="500" value="{{ .exo_details.Description }}" required>
-  
-          <label for="exo-name">Nom de l'exercice</label>
-          <input id="exo-name" name="exo-name" type="text" placeholder="ex: Exercice 1" size="250" value="{{ .exo_details.Name }}" required>
-  
-          <label for="bar">Barème</label>
-          <input id="bar" name="bar" type="number" placeholder="ex: 10" size="2" required min="0" max="100" value="{{ .exo_details.Bareme }}" required>
-  
-          <label for="exo-date">Date de rendu</label>
-          <input type="date" id="exo-date" name="exo-date" value="{{ .exo_details.Due }}" required>
-  
-
-
-          
-          <div id="languages">
-            {{ if eq .infos.Matter "Développement" }}
-              <label for="exo-language">Language</label>
-            {{ else }}
-              <label for="exo-language">Sujet</label>
-            {{ end}}
-            <select name="exo-language" id="exo-language" required>
-              {{ range .subjectsList }}
-                {{ if eq $.exo_details.Subject . }}
-                  <option selected value="{{ $.exo_details.Subject }}">{{ $.exo_details.Subject }}</option>
+        <div class="champ-oublie">
+            <div class="form-popup" id="popupForm">
+                <p class="text">Exercice modifié</p>
+                <a class="btn" href="/board/exercices">OK</a>
                 {{ else }}
-                  <option value="{{ . }}">{{ . }}</option>
+                <p class="text">Une erreur s'est produite</p>
+                <a class="btn" href="/board/exercices">OK</a>
                 {{ end }}
-              {{ end }}
-            </select>
-          </div>
-
-          <div id="level">
-  
-          <label for="exo-level">Niveau</label>
-          <select name="exo-level" id="exo-level">
-  
-            {{ range .levelsList }}
-              {{ if eq $.exo_details.Level .}}
-                <option selected value="{{ $.exo_details.Level }}">{{ $.exo_details.Level }}</option>
-              {{ else }}
-                <option value="{{ . }}">{{ . }}</option>
-              {{ end }}
-            {{ end }}
-                
-          </select>
-          </div>
-  
-          <label for="repo-path">Dossier github attendu</label>
-          <input id="repo-path" name="repo-path" type="text"  value="{{ $.exo_details.GitPath }}" placeholder="ex: /MDSB12022/Exo1" size="500" required>
-          <button type="submit">Modifier</button>
-          <a href="http://localhost:9999/board/exercices">Annuler</a>
-        </form>
-      {{ end }}
+            </div>
         </div>
+
+        {{ else }}
+
+        <!-- display edit window -->
+        <div class="identify">
+            <div class="form-pop" id="formpop">
+                <form method="post" class="form-identifiant">
+
+                    <p class="att"> MODIFIER UN EXERCICE</p>
+                    <div class="parametre-input">
+                        <div><label for="enonce">Énnoncé</label></div>
+                        <div><textarea id="desc" name="desc" type="text" placeholder="Votre énnoncé..." size="500"
+                                value="{{ .exo_details.Description }}" required></textarea></div>
+
+                        <div><label for="exo-name">Nom de l'exercice</label></div>
+                        <div><input id="exo-name" name="exo-name" type="text" placeholder="ex: Exercice 1" size="250"
+                                value="{{ .exo_details.Name }}" required></div>
+
+                        <div><label for="bar">Barème</label></div>
+                        <div><input id="bar" name="bar" type="number" placeholder="ex: 10" size="2" required min="0"
+                                max="100" value="{{ .exo_details.Bareme }}" required></div>
+
+                        <label for="exo-date">Date de rendu</label>
+                        <input type="date" id="exo-date" name="exo-date" value="{{ .exo_details.Due }}" required>
+
+
+                        <div id="languages">
+                            {{ if eq .infos.Matter "Développement" }}
+                            <label for="exo-language">Language</label>
+                            {{ else }}
+                            <label for="exo-language">Sujet</label>
+                            {{ end }}
+                            <select name="exo-language" id="exo-language" required>
+                                {{ range .subjectsList }}
+                                {{ if eq $.exo_details.Subject . }}
+                                <option selected value="{{ $.exo_details.Subject }}">{{ $.exo_details.Subject }}
+                                </option>
+                                {{ else }}
+                                <option value="{{ . }}">{{ . }}</option>
+                                {{ end }}
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div id="level">
+
+                            <label for="exo-level">Niveau</label>
+                            <select name="exo-level" id="exo-level">
+
+                                {{ range .levelsList }}
+                                {{ if eq $.exo_details.Level .}}
+                                <option selected value="{{ $.exo_details.Level }}">{{ $.exo_details.Level }}</option>
+                                {{ else }}
+                                <option value="{{ . }}">{{ . }}</option>
+                                {{ end }}
+                                {{ end }}
+
+                            </select>
+                        </div>
+
+                        <div><label for="repo-path">Dossier github attendu</label></div>
+                        <div><input id="repo-path" name="repo-path" type="text" value="{{ $.exo_details.GitPath }}"
+                                placeholder="ex: /MDSB12022/Exo1" size="500" required></div>
+                        <div class="btn-parametre">
+                            <button type="submit">Modifier</button>
+                            <a class="btn" href="http://localhost:9999/board/exercices">Annuler</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {{ end }}
+    </div>
+
 
     {{ end }}
     {{ if eq .is_add 1 }}
     <div id="hover"></div>
     <div id="sendform">
-      {{ if eq .is_send 1 }}
+        {{ if eq .is_send 1 }}
         <!-- display errors -->
-        {{ if eq .is_success 1 }}
-          <p>L'exercice a bien été ajouté</p>
-          <a href="/board/exercices">OK</a>
+        <div class="champ-oublie">
+            <div class="form-popup" id="popupForm">
+                {{ if eq .is_success 1 }}
+                <p class="text">L'exercice a bien été ajouté</p>
+                <a class="btn" href="/board/exercices">OK</a>
+                {{ else }}
+                <p class="text">Une erreur s'est produite</p>
+                <a class="btn" href="/board/exercices">OK</a>
+                {{ end }}
+            </div>
+        </div>
         {{ else }}
-        <p>Une erreur s'est produite</p>
-        <a href="/board/exercices">OK</a>
-        {{ end }}
-      {{ else }}
         <!-- display add window -->
-    
-        <form method="post">
-          <h1>Ajouter un exercice</h1>
-          <label for="desc">Ennoncé</label>
-          <input id="desc" name="desc" type="text" placeholder="Votre énnoncé..." size="500" required>
-  
-          <label for="exo-name">Nom de l'exercice</label>
-          <input id="exo-name" name="exo-name" type="text" placeholder="ex: Exercice 1" size="250" required>
-  
-          <label for="bar">Barème</label>
-          <input id="bar" name="bar" type="number" placeholder="ex: 10" size="2" required min="0" max="100" required>
-  
-          <label for="exo-date">Date de rendu</label>
-          <input type="date" id="exo-date" name="exo-date" value="" required>
-  
-          
-          <div id="languages">
-            {{ if eq .infos.Matter "Développement" }}
-              <label for="exo-language">Langage</label>
-            {{ else }}
-              <label for="exo-language">Sujet</label>
-            {{ end }}
-            <select name="exo-language" id="exo-language" required>
-              <option disabled value="">-- Tous --</option>
-              {{ range .subjectsList }}
-                <option value="{{ . }}">{{ . }}</option>
-              {{ end }}
-            </select>
-          </div>
 
-          <div id="level">
-  
-          <label for="exo-level">Niveau</label>
-          <select name="exo-level" id="exo-level" required>
-            <option disabled value="">-- Tous --</option>
-  
-            {{ range .levelsList }}
-              <option value="{{ . }}">{{ . }}</option>
-            {{ end }}
-                
-          </select>
-          </div>
-  
-          <label for="repo-path">Dossier github attendu</label>
-          <input id="repo-path" name="repo-path" type="text" placeholder="ex: /MDSB12022/Exo1" size="500" required>
-          <button type="submit">Ajouter</button>
-          <a href="http://localhost:9999/board/exercices">Annuler</a>
-        </form>
-        
-      {{ end }}
-      </div>
+        <div class="identify">
+            <div class="form-pop" id="formpop">
+                <form method="post" class="form-identifiant">
+                    <p class="att"> AJOUTER UN EXERCICE </p>
+                    <div class="parametre-input">
+                        <div><label for="desc">Ennoncé</label></div>
+                        <div><input id="desc" name="desc" type="text" placeholder="Votre énnoncé..." size="500"
+                                required></div>
+
+                        <div><label for="exo-name">Nom de l'exercice</label></div>
+                        <div><input id="exo-name" name="exo-name" type="text" placeholder="ex: Exercice 1" size="250"
+                                required></div>
+
+                        <div><label for="bar">Barème</label></div>
+                        <div><input id="bar" name="bar" type="number" placeholder="ex: 10" size="2" required min="0"
+                                max="100" required></div>
+
+                        <div><label for="exo-date">Date de rendu</label></div>
+                        <div><input type="date" id="exo-date" name="exo-date" value="" required></div>
+
+
+                        <div id="languages">
+                            {{ if eq .infos.Matter "Développement" }}
+                            <label for="exo-language">Langage</label>
+                            {{ else }}
+                            <label for="exo-language">Sujet</label>
+                            {{ end }}
+                            <select name="exo-language" id="exo-language" required>
+                                <option disabled value="">-- Tous --</option>
+                                {{ range .subjectsList }}
+                                <option value="{{ . }}">{{ . }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div id="level">
+                            <label for="exo-level">Niveau</label>
+                            <select name="exo-level" id="exo-level" required>
+                                <option disabled value="">-- Tous --</option>
+
+                                {{ range .levelsList }}
+                                <option value="{{ . }}">{{ . }}</option>
+                                {{ end }}
+
+                            </select>
+                        </div>
+
+                        <div><label for="repo-path">Dossier github attendu</label></div>
+                        <div><input id="repo-path" name="repo-path" type="text" placeholder="ex: /MDSB12022/Exo1"
+                                size="500" required></div>
+                        <div class="btn-parametre">
+                            <button type="submit">Ajouter</button>
+                            <a class="btn" href="http://localhost:9999/board/exercices">Annuler</a>
+                        </div>
+                    </div>
+                    {{ end }}
+                </form>
+            </div>
+        </div>
+    </div>
 
     {{ end }}
 
+    <script>
 
-  <script>
+        const params = new URLSearchParams(document.location.search);
 
-    const params = new URLSearchParams(document.location.search);
+        const showInfos = (infos) => {
+            let previousName = params.get('exo-name');
+            let previousDate = params.get('date');
+            if (previousName) document.getElementById('exo-name').value = previousName;
+            if (previousDate) document.getElementById('date').value = previousDate;
 
-    const showInfos = (infos) => {
-      let previousName = params.get('exo-name');
-      let previousDate = params.get('date');
-      if (previousName) document.getElementById('exo-name').value = previousName;
-      if (previousDate) document.getElementById('date').value = previousDate;
+            showLevels();
+            showLanguages();
+        }
 
-      showLevels();
-      showLanguages();
-    }
+        function showLevels() {
+            let previousLevel = params.get('exo-level');
+            if (previousLevel) {
+                let select = document.getElementById('exo-level');
+                for (let i = 0, j = select.options.length; i < j; i++) {
+                    if ((i == 0 && previousLevel == "") || select.options[i].value == previousLevel) {
+                        select.options[i].setAttribute("selected", 1);
+                        break;
+                    }
+                }
 
-    function showLevels() {
-      let previousLevel = params.get('exo-level');
-      if (previousLevel) {
-        let select = document.getElementById('exo-level');
-        for (let i = 0, j = select.options.length; i < j; i++) {
-            if ((i == 0 && previousLevel == "") || select.options[i].value == previousLevel) {
-              select.options[i].setAttribute("selected",1);
-              break;
+            }
+
+        }
+
+        function showLanguages() {
+            let previousLangage = params.get('exo-language');
+            if (previousLangage) {
+                let select = document.getElementById('exo-language');
+                for (let i = 0, j = select.options.length; i < j; i++) {
+                    if ((i == 0 && previousLangage == "") || select.options[i].value == previousLevel) {
+                        select.options[i].setAttribute("selected", 1);
+                        break;
+                    }
+                }
             }
         }
 
-      }
+        window.addEventListener("load", _ => {
+            showInfos()
+        });
 
-    }
 
-    function showLanguages() {
-      let previousLangage = params.get('exo-language');
-      if (previousLangage) {
-        let select = document.getElementById('exo-language');
-        for (let i = 0, j = select.options.length; i < j; i++) {
-            if ((i == 0 && previousLangage == "") || select.options[i].value == previousLevel) {
-              select.options[i].setAttribute("selected",1);
-              break;
-            }
-        }
-      }
-    }
 
-    window.addEventListener("load", _ => {
-      showInfos()
-    });
-
-    
-
-  </script> 
-
-  <!-- TODO INTEGRATE -->
-  <script type="text/javascript" src="../js/verifGit.js"></script>
-
+    </script>
+    <script type="text/javascript" src="/../js/verifGit.js"></script>
 </body>
+
 
 </html>
