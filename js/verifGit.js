@@ -1,8 +1,7 @@
 const regexGitHub = /github.com/i;
 
-window.onload = function() {
+window.addEventListener("load", _ => {
     var repos = document.querySelectorAll('[class=repo]');
-
     // http request
     for (var i = 0; i < repos.length; i++) {
         let repo = repos[i]
@@ -17,4 +16,4 @@ window.onload = function() {
             repo.style.color='#A53636'
         })
     }
-}
+})
